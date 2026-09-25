@@ -61,12 +61,13 @@ void main() {
     expect(plusTopLeft.dx, greaterThan(20.0));
     expect(plusTopLeft.dx, lessThan(40.0));
 
-    // Verify active nav item (zap) icon is centered
-    final zapFinder = find.byIcon(LucideIcons.zap);
-    expect(zapFinder, findsOneWidget);
-    final zapTopLeft = tester.getTopLeft(zapFinder);
-    expect(zapTopLeft.dx, greaterThan(20.0));
-    expect(zapTopLeft.dx, lessThan(40.0));
+    // Verify Ask (zap) is removed and first nav item (clipboardList) is centered
+    expect(find.byIcon(LucideIcons.zap), findsNothing);
+    final clipFinder = find.byIcon(LucideIcons.clipboardList);
+    expect(clipFinder, findsOneWidget);
+    final clipTopLeft = tester.getTopLeft(clipFinder);
+    expect(clipTopLeft.dx, greaterThan(20.0));
+    expect(clipTopLeft.dx, lessThan(40.0));
 
     // Verify archive button icon is centered
     final archiveFinder = find.byIcon(LucideIcons.archive);

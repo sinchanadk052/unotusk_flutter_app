@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import '../data/mock_data.dart';
 import '../models/models.dart';
+import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 
 class ArchivedModal extends StatefulWidget {
@@ -21,13 +21,20 @@ class ArchivedModal extends StatefulWidget {
 }
 
 class _ArchivedModalState extends State<ArchivedModal> {
-  late List<ArchivedChat> _chats;
+  List<ArchivedChat> _chats = [];
   String _search = '';
 
   @override
   void initState() {
     super.initState();
-    _chats = List.from(MockData.initialArchivedChats);
+    _loadChats();
+  }
+
+  void _loadChats() async {
+    final list = await ApiService.fetchArchivedChats();
+    if (mounted) {
+      setState(() => _chats = list);
+    }
   }
 
   @override

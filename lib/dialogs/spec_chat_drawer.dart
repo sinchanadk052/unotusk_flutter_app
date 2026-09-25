@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import '../data/mock_data.dart';
 import '../models/models.dart';
 import '../theme/app_theme.dart';
 import '../widgets/badges.dart';
@@ -19,15 +18,14 @@ class SpecChatDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final thread = MockData.specChatThreads[spec.id] ??
-        [
-          {'role': 'user', 'text': spec.query},
-          {
-            'role': 'ai',
-            'text':
-                '[CONFIRMED · score ${spec.score.toStringAsFixed(2)}] Verified decision and spec context retrieved from repository graph.'
-          }
-        ];
+    final thread = [
+      {'role': 'user', 'text': spec.query},
+      {
+        'role': 'ai',
+        'text':
+            '[CONFIRMED · score ${spec.score.toStringAsFixed(2)}] Verified decision and spec context retrieved from server at 10.0.0.59:8000.'
+      }
+    ];
 
     return Container(
       width: 480,

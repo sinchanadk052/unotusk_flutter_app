@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../data/mock_data.dart';
 import '../models/models.dart';
+import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 
 class OntologyGraphScreen extends StatefulWidget {
@@ -14,6 +14,25 @@ class OntologyGraphScreen extends StatefulWidget {
 
 class _OntologyGraphScreenState extends State<OntologyGraphScreen> {
   int? _hoveredNodeId;
+  List<OntologyNode> _nodes = [];
+  List<List<int>> _edges = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOntology();
+  }
+
+  void _loadOntology() async {
+    final nodes = await ApiService.fetchOntologyNodes();
+    final edges = await ApiService.fetchOntologyEdges();
+    if (mounted) {
+      setState(() {
+        _nodes = nodes;
+        _edges = edges;
+      });
+    }
+  }
 
   Color _getNodeColor(String type) {
     switch (type) {
@@ -89,7 +108,7 @@ class _OntologyGraphScreenState extends State<OntologyGraphScreen> {
                       onTapUp: (details) {
                         // find tapped node
                         int? tappedId;
-                        for (final node in MockData.ontologyNodes) {
+                        for (final node in _nodes) {
                           final nx = node.cx * scale;
                           final ny = node.cy * scale;
                           final distSq = (details.localPosition.dx - nx) *
@@ -109,8 +128,8 @@ class _OntologyGraphScreenState extends State<OntologyGraphScreen> {
                       child: CustomPaint(
                         size: Size(constraints.maxWidth, constraints.maxHeight),
                         painter: _OntologyGraphPainter(
-                          nodes: MockData.ontologyNodes,
-                          edges: MockData.ontologyEdges,
+                          nodes: _nodes,
+                          edges: _edges,
                           hoveredNodeId: _hoveredNodeId,
                           palette: widget.palette,
                           scale: scale,
@@ -173,11 +192,12 @@ class _OntologyGraphScreenState extends State<OntologyGraphScreen> {
   }
 
   Widget _buildNodeDetailsCard() {
-    final node = MockData.ontologyNodes.firstWhere(
+    if (_nodes.isEmpty) return const SizedBox();
+    final node = _nodes.firstWhere(
       (n) => n.id == _hoveredNodeId,
-      orElse: () => MockData.ontologyNodes.first,
+      orElse: () => _nodes.first,
     );
-    final connectedEdges = MockData.ontologyEdges
+    final connectedEdges = _edges
         .where((e) => e[0] == node.id || e[1] == node.id)
         .length;
 

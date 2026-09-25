@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import '../data/mock_data.dart';
 import '../models/models.dart';
+import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import 'unotusk_logo.dart';
 import 'user_menu_popup.dart';
@@ -40,10 +40,23 @@ class UnoSidebar extends StatefulWidget {
 
 class _UnoSidebarState extends State<UnoSidebar> {
   bool _userMenuOpen = false;
+  List<RecentChat> _recentChats = [];
 
-  // Web source: zh array — same nav items
+  @override
+  void initState() {
+    super.initState();
+    _loadRecentChats();
+  }
+
+  void _loadRecentChats() async {
+    final chats = await ApiService.fetchRecentChats();
+    if (mounted) {
+      setState(() => _recentChats = chats);
+    }
+  }
+
+  // Nav items without Ask button
   final List<Map<String, dynamic>> _navItems = const [
-    {'id': 'chat', 'label': 'Ask', 'icon': LucideIcons.zap},
     {'id': 'spec-history', 'label': 'Spec History', 'icon': LucideIcons.clipboardList},
     {'id': 'graph', 'label': 'Ontology Graph', 'icon': LucideIcons.gitBranch},
     {'id': 'feed', 'label': 'Ingestion Feed', 'icon': LucideIcons.download},
@@ -287,9 +300,9 @@ class _UnoSidebarState extends State<UnoSidebar> {
                 Expanded(
                   child: ListView.builder(
                     padding: EdgeInsets.zero,
-                    itemCount: MockData.recentChats.length,
+                    itemCount: _recentChats.length,
                     itemBuilder: (context, index) {
-                      final chat = MockData.recentChats[index];
+                      final chat = _recentChats[index];
                       // web: padding 8px 8px, borderRadius 6, hover bgElevated
                       return InkWell(
                         onTap: () => widget.onLoadRecentChat(chat.id),

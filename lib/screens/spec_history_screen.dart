@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import '../data/mock_data.dart';
 import '../dialogs/spec_chat_drawer.dart';
 import '../models/models.dart';
+import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/badges.dart';
 
@@ -19,10 +19,24 @@ class _SpecHistoryScreenState extends State<SpecHistoryScreen> {
   String _search = '';
   DateTime? _selectedDate;
   SpecHistoryItem? _activeSpecDrawer;
+  List<SpecHistoryItem> _specHistory = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSpecs();
+  }
+
+  void _loadSpecs() async {
+    final list = await ApiService.fetchSpecHistory();
+    if (mounted) {
+      setState(() => _specHistory = list);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final filtered = MockData.specHistoryList.where((s) {
+    final filtered = _specHistory.where((s) {
       final matchesSearch =
           s.query.toLowerCase().contains(_search.toLowerCase());
       if (!matchesSearch) return false;
@@ -219,11 +233,9 @@ class _SpecHistoryScreenState extends State<SpecHistoryScreen> {
                         ),
                         TextButton(
                           onPressed: () {
-                            final target = MockData.specHistoryList.firstWhere(
-                              (s) => s.id == 'sh-006',
-                              orElse: () => MockData.specHistoryList.first,
-                            );
-                            setState(() => _activeSpecDrawer = target);
+                            if (_specHistory.isNotEmpty) {
+                              setState(() => _activeSpecDrawer = _specHistory.first);
+                            }
                           },
                           child: Text(
                             'VIEW →',

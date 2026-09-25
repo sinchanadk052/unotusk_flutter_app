@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import '../data/mock_data.dart';
 import '../models/models.dart';
 import '../theme/app_theme.dart';
 import '../widgets/badges.dart';
@@ -14,6 +13,36 @@ class ChatScreen extends StatefulWidget {
   final List<ChatMessage> messages;
   final bool isGenerating;
   final Function(String) onSubmitQuery;
+
+  static const List<String> querySuggestions = [
+    'What are the primary components in this repository?',
+    'Explain the database migration flow and schema',
+    'How does authentication and OIDC discovery work?',
+    'What services are exposed over the LAN on port 8000?',
+  ];
+
+  static const List<HeroCardItem> heroCards = [
+    HeroCardItem(
+      title: 'Explain the core server architecture',
+      tag: 'ARCHITECTURE',
+      icon: LucideIcons.layers,
+    ),
+    HeroCardItem(
+      title: 'How does OIDC Single Sign-On authenticate?',
+      tag: 'SECURITY',
+      icon: LucideIcons.shieldCheck,
+    ),
+    HeroCardItem(
+      title: 'Inspect active background ingestion tasks',
+      tag: 'PIPELINE',
+      icon: LucideIcons.cpu,
+    ),
+    HeroCardItem(
+      title: 'Audit LAN network connectivity and ports',
+      tag: 'TELEMETRY',
+      icon: LucideIcons.network,
+    ),
+  ];
 
   const ChatScreen({
     super.key,
@@ -87,7 +116,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         _inputController.text = prompt;
                         _handleSubmit();
                       },
-                      suggestions: MockData.querySuggestions,
+                      suggestions: ChatScreen.querySuggestions,
                     ),
                     const SizedBox(height: 10),
                     Opacity(
@@ -116,9 +145,9 @@ class _ChatScreenState extends State<ChatScreen> {
                             mainAxisSpacing: 12,
                             childAspectRatio: isWide ? 4.7 : 4.0,
                           ),
-                    itemCount: MockData.heroCards.length,
+                    itemCount: ChatScreen.heroCards.length,
                     itemBuilder: (context, index) {
-                      final item = MockData.heroCards[index];
+                      final item = ChatScreen.heroCards[index];
                       return InkWell(
                         onTap: () {
                           _inputController.text = item.title;
@@ -238,7 +267,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         _inputController.text = prompt;
                         _handleSubmit();
                       },
-                      suggestions: MockData.querySuggestions,
+                      suggestions: ChatScreen.querySuggestions,
                       placeholder:
                           'Ask a follow-up about decisions, commits, or tickets…',
                     ),

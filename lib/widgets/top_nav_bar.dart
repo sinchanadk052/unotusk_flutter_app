@@ -11,6 +11,8 @@ class TopNavBar extends StatelessWidget {
   final VoidCallback onToggleTheme;
   final bool showSidebarToggle;
   final VoidCallback? onToggleSidebar;
+  final String? projectName;
+  final VoidCallback? onBackToProjects;
 
   const TopNavBar({
     super.key,
@@ -22,6 +24,8 @@ class TopNavBar extends StatelessWidget {
     required this.onToggleTheme,
     this.showSidebarToggle = false,
     this.onToggleSidebar,
+    this.projectName,
+    this.onBackToProjects,
   });
 
   @override
@@ -35,23 +39,70 @@ class TopNavBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          if (showSidebarToggle && onToggleSidebar != null)
-            InkWell(
-              onTap: onToggleSidebar,
-              borderRadius: BorderRadius.circular(6),
-              child: Container(
-                width: 36,
-                height: 36,
-                alignment: Alignment.center,
-                child: Icon(
-                  LucideIcons.menu,
-                  size: 20,
-                  color: palette.textSec,
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (showSidebarToggle && onToggleSidebar != null)
+                InkWell(
+                  onTap: onToggleSidebar,
+                  borderRadius: BorderRadius.circular(6),
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    alignment: Alignment.center,
+                    child: Icon(
+                      LucideIcons.menu,
+                      size: 20,
+                      color: palette.textSec,
+                    ),
+                  ),
                 ),
-              ),
-            )
-          else
-            const SizedBox.shrink(),
+              if (onBackToProjects != null) ...[
+                const SizedBox(width: 8),
+                InkWell(
+                  onTap: onBackToProjects,
+                  borderRadius: BorderRadius.circular(6),
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(LucideIcons.arrowLeft,
+                            size: 14, color: palette.textSec),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Projects',
+                          style: UnoTypography.body(
+                            color: palette.textSec,
+                            fontSize: 12,
+                          ),
+                        ),
+                        if (projectName != null &&
+                            projectName!.isNotEmpty) ...[
+                          Text(
+                            ' / ',
+                            style: UnoTypography.mono(
+                              color: palette.textSec,
+                              fontSize: 12,
+                            ),
+                          ),
+                          Text(
+                            projectName!,
+                            style: UnoTypography.body(
+                              color: palette.text,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
           Row(
             children: [
               // Notification bell button

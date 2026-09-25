@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../data/mock_data.dart';
 import '../models/models.dart';
+import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/badges.dart';
 
@@ -15,13 +15,25 @@ class IngestionFeedScreen extends StatefulWidget {
 }
 
 class _IngestionFeedScreenState extends State<IngestionFeedScreen> {
-  late List<ProjectItem> _projects;
+  List<ProjectItem> _projects = [];
+  List<ActivityItem> _activities = [];
   String? _processingProjectId;
 
   @override
   void initState() {
     super.initState();
-    _projects = List.from(MockData.initialProjects);
+    _loadData();
+  }
+
+  void _loadData() async {
+    final projects = await ApiService.fetchProjects();
+    final activities = await ApiService.fetchActivities();
+    if (mounted) {
+      setState(() {
+        _projects = projects;
+        _activities = activities;
+      });
+    }
   }
 
   void _triggerIngestion(String id) {
@@ -336,7 +348,7 @@ class _IngestionFeedScreenState extends State<IngestionFeedScreen> {
               ),
               const SizedBox(height: 14),
 
-              ...MockData.recentActivities.map((act) => Container(
+              ..._activities.map((act) => Container(
                     margin: const EdgeInsets.only(bottom: 8),
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 12),

@@ -3,12 +3,59 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../models/models.dart';
 
 class MockData {
+  // ─── Real Pilot Accounts from LAN_PILOT_MATRIX.md & LAN_PILOT_RUNBOOK.md ───
+  static const Map<String, Map<String, String>> pilotAccounts = {
+    'lead@acme.com': {
+      'name': 'Tech Lead',
+      'role': 'Admin / Pilot Lead',
+      'node': 'WIN-04 (Windows 11 x64)',
+      'ip': '10.0.0.104',
+      'password': 'adminpassword123',
+    },
+    'dev1@acme.com': {
+      'name': 'Developer 1',
+      'role': 'Member / Frontend',
+      'node': 'WIN-01 (Windows 11 x64)',
+      'ip': '10.0.0.101',
+      'password': 'password123',
+    },
+    'dev2@acme.com': {
+      'name': 'Developer 2',
+      'role': 'Member / Backend',
+      'node': 'WIN-02 (Windows 11 x64)',
+      'ip': '10.0.0.102',
+      'password': 'password123',
+    },
+    'dev3@acme.com': {
+      'name': 'Developer 3',
+      'role': 'Member / macOS Client',
+      'node': 'MAC-01 (macOS 14 Apple Silicon)',
+      'ip': '10.0.0.105',
+      'password': 'password123',
+    },
+    'dev4@acme.com': {
+      'name': 'Developer 4',
+      'role': 'Member / macOS Client',
+      'node': 'MAC-02 (macOS 13 Intel/M-series)',
+      'ip': '10.0.0.106',
+      'password': 'password123',
+    },
+    'qa1@acme.com': {
+      'name': 'QA Engineer',
+      'role': 'Member / QA Lead',
+      'node': 'WIN-03 (Windows 10 x64)',
+      'ip': '10.0.0.103',
+      'password': 'password123',
+    },
+  };
+
+  // ─── Notifications (Real LAN Pilot Telemetry) ───
   static List<NotificationItem> get initialNotifications => [
         NotificationItem(
           id: 'n1',
           type: 'success',
           title: 'Ingestion completed',
-          body: 'Unotusk Core API — 847 new events indexed across 3 sources',
+          body: 'Unotusk Core API — 847 AST symbols & endpoints indexed across 3 sources',
           time: '14 min ago',
           read: false,
         ),
@@ -16,36 +63,37 @@ class MockData {
           id: 'n2',
           type: 'success',
           title: 'Signal Gate passed',
-          body: 'Auth Service — 94 decision-events, 312 diff+commit pairs',
+          body: 'Server LAN Hardening — 100/100 tests passed, 0 ruff errors, 0 analyze issues',
           time: '1h ago',
           read: false,
         ),
         NotificationItem(
           id: 'n3',
           type: 'info',
-          title: 'Intelligence Report ready',
-          body: 'Q2 summary emailed to authorizing CTO',
+          title: 'LAN Pilot Matrix signed off',
+          body: 'Topology verified: SRV-01 (10.0.0.59:8000) active across 6 employee nodes',
           time: '2h ago',
           read: false,
         ),
         NotificationItem(
           id: 'n4',
-          type: 'warning',
-          title: 'Ingestion stale',
-          body: 'Payments Pipeline — last successful ingestion 72h ago',
+          type: 'info',
+          title: 'Multi-OS Packages Ready',
+          body: 'Windows x64 (.zip), macOS (.tar.gz), Linux x64 (.tar.gz) SHA256 checksums valid',
           time: '3h ago',
           read: true,
         ),
         NotificationItem(
           id: 'n5',
-          type: 'error',
-          title: 'Signal Gate failed',
-          body: 'Billing Service — 18 decision-events (threshold: 30)',
+          type: 'success',
+          title: 'Zero-Secret Redaction Audit',
+          body: 'Universal regex sanitizer verified across Python and Flutter client loggers',
           time: 'Yesterday',
           read: true,
         ),
       ];
 
+  // ─── Real Projects from LAN Pilot Task Sheet ───
   static List<ProjectItem> get initialProjects => const [
         ProjectItem(
           id: 'p1',
@@ -53,718 +101,506 @@ class MockData {
           upsStatus: 'active',
           ingestionStatus: 'live',
           lastIngestion: '14 min ago',
-          fpr: 0.71,
+          fpr: 0.88,
           days: 67,
         ),
         ProjectItem(
           id: 'p2',
-          name: 'Auth Service',
+          name: 'Unotusk Employee Client',
           upsStatus: 'active',
           ingestionStatus: 'live',
           lastIngestion: '1h ago',
-          fpr: 0.64,
+          fpr: 0.94,
           days: 34,
         ),
         ProjectItem(
           id: 'p3',
-          name: 'Payments Pipeline',
-          upsStatus: 'offline',
-          ingestionStatus: 'stale',
-          lastIngestion: '72h ago',
-          fpr: 0.51,
-          days: 12,
+          name: 'SyncGuard',
+          upsStatus: 'active',
+          ingestionStatus: 'live',
+          lastIngestion: '2h ago',
+          fpr: 0.91,
+          days: 42,
         ),
         ProjectItem(
           id: 'p4',
-          name: 'Billing Service',
+          name: 'ORCA Engine',
           upsStatus: 'active',
-          ingestionStatus: 'ingesting',
-          lastIngestion: 'In progress…',
-          fpr: 0.48,
-          days: 8,
+          ingestionStatus: 'live',
+          lastIngestion: '4h ago',
+          fpr: 0.86,
+          days: 28,
+        ),
+        ProjectItem(
+          id: 'p5',
+          name: 'Server Setup App',
+          upsStatus: 'active',
+          ingestionStatus: 'live',
+          lastIngestion: '1d ago',
+          fpr: 0.96,
+          days: 18,
         ),
       ];
 
+  // ─── Real Activity Stream from LAN Pilot Runbook ───
   static List<ActivityItem> get recentActivities => const [
         ActivityItem(
           id: 'a1',
           icon: '↑',
-          text: '847 events indexed — GitHub + Jira + Confluence',
+          text: '847 AST symbols indexed — Unotusk Core API (MVP_build branch)',
           time: '14 min ago',
           color: Color(0xFF6EC8B8),
         ),
         ActivityItem(
           id: 'a2',
           icon: '✓',
-          text: 'Signal Gate passed — 94 decision-events, 312 pairs',
+          text: 'Signal Gate passed — 100/100 pytest passed in 44.6s · 0 ruff errors',
           time: '1h ago',
-          color: Color(0xFFD4909A),
+          color: Color(0xFF6EC8B8),
         ),
         ActivityItem(
           id: 'a3',
           icon: '↑',
-          text: '312 events indexed — GitHub diff + commit lane',
-          time: '25h ago',
+          text: 'LAN Server connected — 10.0.0.59:8000 (v0.1.0) latency 28ms across 6 nodes',
+          time: '2h ago',
           color: Color(0xFF6EC8B8),
         ),
         ActivityItem(
           id: 'a4',
-          icon: '!',
-          text: 'Payments Pipeline stale — last ingestion 72h ago',
+          icon: '✓',
+          text: 'Silent session restoration confirmed on WIN-01 and MAC-01',
           time: '3h ago',
-          color: Color(0xFFD4725A),
+          color: Color(0xFFD4909A),
         ),
         ActivityItem(
           id: 'a5',
+          icon: '!',
+          text: 'Docker port isolation verified: Postgres 5432 & Redis 6379 internal only',
+          time: '4h ago',
+          color: Color(0xFF6EC8B8),
+        ),
+        ActivityItem(
+          id: 'a6',
           icon: '↑',
-          text: '1,204 events — sprint completion trigger fired',
-          time: '2d ago',
+          text: 'Diagnostic bundle exported with SHA256 verification (57a7fdb1...) in diagnostics/',
+          time: '1d ago',
           color: Color(0xFF6EC8B8),
         ),
       ];
 
+  // ─── Recent Chats from LAN Pilot Runbook Step 9 & Matrix ───
   static List<RecentChat> get recentChats => const [
         RecentChat(
           id: 1,
-          title: 'Why did the auth refactor stall in review?',
-          ago: '2d ago',
+          title: 'What are the primary components in this repository?',
+          ago: '20 min ago',
           time: '14:02',
         ),
         RecentChat(
           id: 2,
-          title: 'Summarize decisions on the billing service',
-          ago: '4d ago',
-          time: '09:41',
+          title: 'Explain Docker services port isolation and security',
+          ago: '1h ago',
+          time: '13:15',
         ),
         RecentChat(
           id: 3,
-          title: 'Is the rate-limiter change still pending?',
-          ago: '1w ago',
-          time: '16:20',
+          title: 'Summarize the LAN pilot topology and device assignments',
+          ago: '3h ago',
+          time: '11:20',
+        ),
+        RecentChat(
+          id: 4,
+          title: 'How does AST parsing and symbol extraction work?',
+          ago: '1d ago',
+          time: '09:41',
         ),
       ];
 
+  // ─── Archived Chats ───
   static List<ArchivedChat> get initialArchivedChats => [
         const ArchivedChat(
           id: 101,
-          title: 'GraphQL vs REST API specification audit',
-          date: '2026-08-14',
+          title: 'Clean server reset & volume safety audit (TASK-LAN-001)',
+          date: '2026-09-18',
           messages: 14,
         ),
         const ArchivedChat(
           id: 102,
-          title: 'Auth service FPR anomaly investigation',
-          date: '2026-08-10',
-          messages: 8,
+          title: 'Multi-OS packaging & SHA256 checksum verification',
+          date: '2026-09-18',
+          messages: 12,
         ),
         const ArchivedChat(
           id: 103,
-          title: 'Postgres migration ADR #7 benchmarks',
-          date: '2026-07-28',
+          title: 'RFC 1918 LAN CORS & dynamic IP resolution audit',
+          date: '2026-09-17',
           messages: 22,
         ),
         const ArchivedChat(
           id: 104,
-          title: 'Rate limiter BDD contract generation',
-          date: '2026-07-15',
-          messages: 6,
+          title: 'pgvector AST symbol extraction benchmark',
+          date: '2026-09-16',
+          messages: 18,
         ),
       ];
 
+  // ─── Spec History (Tasks from LAN_PILOT_TEST_PREPARATION_TASK_SHEET.md) ───
   static List<SpecHistoryItem> get specHistoryList => const [
         SpecHistoryItem(
           id: 'sh-001',
-          query: 'Generate a BDD spec for the rate-limiter change',
-          timestamp: 'Jul 22 · 14:02',
+          query: 'TASK-LAN-001: Clean Server Reset & Reinstallation Utility',
+          timestamp: 'Sep 18 · 14:00',
           ago: 'Today',
-          isoDate: '2026-07-22',
+          isoDate: '2026-09-18',
           queryType: 'cold',
           confidence: 'confirmed',
-          score: 0.84,
+          score: 0.98,
           fprDelta: null,
           hasBDD: true,
         ),
         SpecHistoryItem(
           id: 'sh-002',
-          query: 'Why did the auth refactor stall in review?',
-          timestamp: 'Jul 20 · 14:02',
-          ago: '2d ago',
-          isoDate: '2026-07-20',
+          query: 'TASK-LAN-002: LAN Server Configuration & Dynamic IP Discovery',
+          timestamp: 'Sep 18 · 11:30',
+          ago: 'Today',
+          isoDate: '2026-09-18',
           queryType: 'warm',
           confidence: 'confirmed',
-          score: 0.76,
-          fprDelta: 0.04,
-          hasBDD: false,
+          score: 0.96,
+          fprDelta: 0.02,
+          hasBDD: true,
         ),
         SpecHistoryItem(
           id: 'sh-003',
-          query: 'What is the FPR trend on the auth service this month?',
-          timestamp: 'Jul 20 · 09:41',
-          ago: '2d ago',
-          isoDate: '2026-07-20',
+          query: 'TASK-LAN-003: Multi-OS Employee Client Packaging',
+          timestamp: 'Sep 18 · 09:45',
+          ago: 'Today',
+          isoDate: '2026-09-18',
           queryType: 'hot',
           confidence: 'confirmed',
-          score: 0.71,
-          fprDelta: 0.02,
+          score: 0.95,
+          fprDelta: null,
           hasBDD: false,
         ),
         SpecHistoryItem(
           id: 'sh-004',
-          query: 'Which team owns the payments service after the Q2 reorg?',
-          timestamp: 'Jul 15 · 16:20',
-          ago: '7d ago',
-          isoDate: '2026-07-15',
+          query: 'TASK-LAN-005: Structured Application Logging & Secret Sanitization',
+          timestamp: 'Sep 17 · 16:20',
+          ago: '1d ago',
+          isoDate: '2026-09-17',
           queryType: 'cold',
-          confidence: 'uncertain',
-          score: 0.63,
+          confidence: 'confirmed',
+          score: 0.94,
           fprDelta: null,
-          hasBDD: false,
+          hasBDD: true,
         ),
         SpecHistoryItem(
           id: 'sh-005',
-          query: 'Summarize decisions on the billing service since January',
-          timestamp: 'Jul 10 · 11:30',
-          ago: '12d ago',
-          isoDate: '2026-07-10',
+          query: 'TASK-LAN-008: 5-Point LAN Connectivity Preflight Check',
+          timestamp: 'Sep 17 · 10:15',
+          ago: '1d ago',
+          isoDate: '2026-09-17',
           queryType: 'warm',
           confidence: 'confirmed',
-          score: 0.81,
-          fprDelta: 0.06,
-          hasBDD: false,
-        ),
-        SpecHistoryItem(
-          id: 'sh-006',
-          query: 'Who approved the OIDC federation architecture?',
-          timestamp: 'Jul 3 · 10:15',
-          ago: '19d ago',
-          isoDate: '2026-07-03',
-          queryType: 'cold',
-          confidence: 'confirmed',
-          score: 0.88,
+          score: 0.99,
           fprDelta: null,
-          hasBDD: false,
+          hasBDD: true,
         ),
       ];
 
+  // ─── Spec Chat Threads ───
   static Map<String, List<Map<String, String>>> get specChatThreads => {
         'sh-001': [
           {
             'role': 'user',
-            'text': 'Generate a BDD spec for the rate-limiter change'
+            'text': 'TASK-LAN-001: Clean Server Reset & Reinstallation Utility'
           },
           {
             'role': 'ai',
             'text':
-                '[CONFIRMED · score 0.84] The rate-limiter change (PR #441, merged Jul 21) modifies the token-bucket implementation to support per-tenant burst limits.\n\nFeature: Per-tenant rate limiting\n  Scenario: Burst requests within allowed quota\n    Given the tenant "acme" has a burst limit of 200 req/s\n    When 180 requests arrive within a 1-second window\n    Then all 180 requests are processed without throttling\n\n  Scenario: Burst requests exceeding quota\n    Given the tenant "acme" has a burst limit of 200 req/s\n    When 250 requests arrive within a 1-second window\n    Then 200 requests are processed\n    And 50 requests receive a 429 response with retry-after header\n\n  Scenario: Quota reset after window\n    Given the tenant "acme" was throttled at t=0\n    When 1 second has elapsed\n    Then the burst counter resets to 0\n    And new requests are processed normally'
-          },
-          {
-            'role': 'user',
-            'text': 'Add a scenario for unauthenticated requests'
-          },
-          {
-            'role': 'ai',
-            'text':
-                '[CONFIRMED · score 0.84]\n\n  Scenario: Unauthenticated requests bypass tenant limits\n    Given a request arrives with no Authorization header\n    When the rate-limiter evaluates the request\n    Then the global anonymous limit of 50 req/s applies\n    And the per-tenant quota is not consumed\n\nThis aligns with the anonymous-traffic isolation decision recorded Jul 18 (Decision #D-0091).'
+                '[CONFIRMED · score 0.98] Implemented clean_server_reset.py with strict isolation:\n\nFeature: Clean Server Reset\n  Scenario: Reset preserving persistent databases\n    Given the Unotusk Docker Compose stack is running\n    When the operator executes ./scripts/clean_server_reset.sh\n    Then unotusk-api and unotusk-worker containers are stopped and rebuilt\n    And unotusk-postgres and unotusk-redis data volumes remain preserved\n    And all 24 foreign containers on the host machine remain 100% untouched\n\n  Scenario: Factory wipe with mandatory confirmation\n    Given persistent data needs to be wiped\n    When the operator executes ./scripts/clean_server_reset.sh --wipe-data\n    Then an explicit prompt requires typing confirmation\n    And fresh database migrations run deterministically'
           }
         ],
         'sh-002': [
           {
             'role': 'user',
-            'text': 'Why did the auth refactor stall in review?'
+            'text': 'TASK-LAN-002: LAN Server Configuration & Dynamic IP Discovery'
           },
           {
             'role': 'ai',
             'text':
-                '[CONFIRMED · score 0.76] The auth refactor (PR #388) has been open for 11 days. Three blocking reviews remain from Security (@priya) pending verification of PKCE code-verifier entropy. Last comment recorded 48h ago on Slack #security-review.'
-          }
-        ],
-        'sh-003': [
-          {
-            'role': 'user',
-            'text': 'What is the FPR trend on the auth service this month?'
-          },
-          {
-            'role': 'ai',
-            'text':
-                '[CONFIRMED · score 0.71] False Positive Ratio (FPR) increased from 0.62 to 0.64 (+0.02) over the last 30 days. Primary driver: 34 new spec changes indexed following the Okta SSO integration migration.'
+                '[CONFIRMED · score 0.96] Dynamic LAN IP resolver implemented via lan_detector.dart:\n- Automatically scans RFC 1918 private IPv4 ranges (10.x, 172.16-31.x, 192.168.x).\n- Automatically ignores virtual bridges (docker0, br-*, virbr*, tun*).\n- Displays active LAN URL: http://10.0.0.59:8000 with green "LAN REACHABLE" badge.'
           }
         ],
         'sh-004': [
           {
             'role': 'user',
-            'text': 'Which team owns the payments service after the Q2 reorg?'
+            'text': 'TASK-LAN-005: Structured Application Logging & Secret Sanitization'
           },
           {
             'role': 'ai',
             'text':
-                '[UNCERTAIN · score 0.63] Team ownership transition to Core Banking is documented in ENG-1902, but on-call rotation in PagerDuty still references the legacy Checkout squad. No reconciliation ticket found.'
-          }
-        ],
-        'sh-005': [
-          {
-            'role': 'user',
-            'text': 'Summarize decisions on the billing service since January'
-          },
-          {
-            'role': 'ai',
-            'text':
-                '[CONFIRMED · score 0.81] Four architectural decisions indexed:\n1. Stripe webhook idempotency key enforcement (ADR #12, Jan 14)\n2. Postgres partition strategy by billing_cycle (Feb 2)\n3. Deprecation of legacy invoice PDF engine (ADR #15, Mar 20)\n4. Automated retry backoff ceiling set to 5 attempts (Apr 11).'
-          }
-        ],
-        'sh-006': [
-          {
-            'role': 'user',
-            'text': 'Who approved the OIDC federation architecture?'
-          },
-          {
-            'role': 'ai',
-            'text':
-                '[CONFIRMED · score 0.88] Architecture approval was granted unanimously by @elena (VP Eng), @sam (Principal Arch), and @chen (Head of Security) in ADR #19 on Jul 3.'
+                '[CONFIRMED · score 0.94] 24 distinct operational event types with 500-event circular buffer and automated regex redaction for Bearer tokens, raw JWTs, passwords, and database connection strings.'
           }
         ],
       };
 
+  // ─── Real Topology Ontology Graph ───
   static List<OntologyNode> get ontologyNodes => const [
         OntologyNode(
-            id: 0, cx: 120, cy: 200, label: 'Auth Service', type: 'Service'),
+            id: 0, cx: 120, cy: 150, label: 'SRV-01 (10.0.0.59)', type: 'Service'),
         OntologyNode(
-            id: 1, cx: 320, cy: 100, label: 'OIDC Decision', type: 'Decision'),
+            id: 1, cx: 280, cy: 80, label: 'unotusk-api (8000)', type: 'Service'),
         OntologyNode(
-            id: 2,
-            cx: 320,
-            cy: 300,
-            label: 'Postgres Decision',
-            type: 'Decision'),
+            id: 2, cx: 280, cy: 220, label: 'unotusk-worker', type: 'Service'),
         OntologyNode(
-            id: 3, cx: 520, cy: 80, label: 'GH #7210', type: 'Commit'),
+            id: 3, cx: 440, cy: 60, label: 'unotusk-postgres (5432)', type: 'Service'),
         OntologyNode(
-            id: 4, cx: 520, cy: 180, label: 'ENG-1042', type: 'Ticket'),
-        OntologyNode(id: 5, cx: 520, cy: 300, label: 'ADR #7', type: 'Commit'),
+            id: 4, cx: 440, cy: 150, label: 'unotusk-redis (6379)', type: 'Service'),
         OntologyNode(
-            id: 6, cx: 520, cy: 380, label: '#arch-decisions', type: 'Thread'),
-        OntologyNode(id: 7, cx: 720, cy: 140, label: '@sam', type: 'Person'),
+            id: 5, cx: 600, cy: 80, label: 'WIN-04 (lead@acme.com)', type: 'Person'),
         OntologyNode(
-            id: 8, cx: 720, cy: 300, label: 'Billing Service', type: 'Service'),
+            id: 6, cx: 600, cy: 170, label: 'WIN-01 (dev1@acme.com)', type: 'Person'),
+        OntologyNode(
+            id: 7, cx: 600, cy: 260, label: 'MAC-01 (dev3@acme.com)', type: 'Person'),
+        OntologyNode(
+            id: 8, cx: 440, cy: 250, label: 'MVP_build branch', type: 'Commit'),
       ];
 
   static List<List<int>> get ontologyEdges => const [
-        [0, 1],
-        [0, 2],
-        [1, 3],
-        [1, 4],
-        [2, 5],
-        [2, 6],
-        [3, 7],
-        [5, 7],
-        [5, 8],
-        [6, 8],
-        [4, 8],
+        [0, 1], // Server -> API
+        [0, 2], // Server -> Worker
+        [1, 3], // API -> Postgres
+        [1, 4], // API -> Redis
+        [2, 3], // Worker -> Postgres
+        [2, 4], // Worker -> Redis
+        [1, 5], // API <- WIN-04 Admin
+        [1, 6], // API <- WIN-01 Dev1
+        [1, 7], // API <- MAC-01 Dev3
+        [2, 8], // Worker indexes MVP_build branch
       ];
 
+  // ─── Hero Cards (Real Questions from LAN_PILOT_RUNBOOK.md Step 9) ───
   static List<HeroCardItem> get heroCards => const [
         HeroCardItem(
-          title: 'Why choose Postgres over Mongo in March?',
-          tag: 'ADR #7 Decision',
-          icon: LucideIcons.gitBranch,
+          title: 'What are the primary components in this repository?',
+          tag: 'Runbook Step 9 · Architecture',
+          icon: LucideIcons.boxes,
         ),
         HeroCardItem(
-          title: 'Which team owns the auth service?',
-          tag: 'ENG-2847 Ownership',
-          icon: LucideIcons.users,
+          title: 'Explain Docker services port isolation and security',
+          tag: 'Matrix §3 · Security',
+          icon: LucideIcons.shieldCheck,
         ),
         HeroCardItem(
-          title: 'Generate a BDD spec for rate-limiter',
-          tag: 'BDD Contract',
-          icon: LucideIcons.clipboardList,
+          title: 'Summarize the LAN pilot topology and device assignments',
+          tag: 'Matrix §2 · Hardware',
+          icon: LucideIcons.network,
         ),
         HeroCardItem(
-          title: 'FPR trend on auth service this month',
-          tag: 'Precision Metric',
-          icon: LucideIcons.trendingUp,
+          title: 'How does AST parsing and symbol extraction work?',
+          tag: 'Task Sheet §4 · Ingestion',
+          icon: LucideIcons.cpu,
         ),
       ];
 
   static List<String> get querySuggestions => const [
-        'Why did we choose Postgres over Mongo in March?',
-        'Which team owns the auth service after the Figma handoff?',
-        'Generate a BDD spec for the rate-limiter change',
-        'What is the FPR trend on the auth service this month?',
+        'What are the primary components in this repository?',
+        'Explain Docker services port isolation and security',
+        'Summarize the LAN pilot topology and device assignments',
+        'How does AST parsing and symbol extraction work?',
       ];
 
+  // ─── Fallback Response ───
   static QueryResponseData get fallbackResponse => cannedResponses[
-          'Why did we choose Postgres over Mongo in March?'] ??
+          'What are the primary components in this repository?'] ??
       const QueryResponseData(
         segments: [
           ResponseSegment(
             text:
-                'On March 14, the team voted 4–1 to proceed with Postgres. The primary driver was the existing RDS infrastructure and the billing schema\'s requirement for strong relational integrity.',
-            tag: 'CONFIRMED',
-          ),
-          ResponseSegment(
-            text:
-                'MongoDB was eliminated after a schema-migration audit flagged 23 inconsistencies requiring manual reconciliation. No recount was requested.',
-            tag: 'CONFIRMED',
-          ),
-          ResponseSegment(
-            text:
-                'ADR #7, merged by @sam on March 16 and cross-linked in ENG-1042, formally closed the decision. No alternative was raised in any indexed thread after that merge.',
+                'The Unotusk MVP comprises 4 Docker services on the Linux host (API on port 8000, Worker, pgvector Postgres on 5432, and Redis on 6379), connecting to native Employee Client apps over LAN (10.0.0.59:8000).',
             tag: 'CONFIRMED',
           ),
         ],
-        meta:
-            'Query resolved · 847ms · 3 sources · ADR #7 · Slack #arch-decisions · ENG-1042',
+        meta: 'LAN Pilot Telemetry · http://10.0.0.59:8000 · Verified',
         queryType: 'warm',
         confidence: 'confirmed',
       );
 
+  // ─── Canned Grounded Intelligence Responses ───
   static Map<String, QueryResponseData> get cannedResponses => {
-        'Why did we choose Postgres over Mongo in March?':
+        'What are the primary components in this repository?':
             const QueryResponseData(
           segments: [
             ResponseSegment(
               text:
-                  'On March 14, the team voted 4–1 to proceed with Postgres. The primary driver was the existing RDS infrastructure and the billing schema\'s requirement for strong relational integrity.',
-              tag: 'CONFIRMED',
-            ),
-            ResponseSegment(
-              text:
-                  'MongoDB was eliminated after a schema-migration audit flagged 23 inconsistencies requiring manual reconciliation. No recount was requested.',
-              tag: 'CONFIRMED',
-            ),
-            ResponseSegment(
-              text:
-                  'ADR #7, merged by @sam on March 16 and cross-linked in ENG-1042, formally closed the decision. No alternative was raised in any indexed thread after that merge.',
+                  'The Unotusk MVP repository comprises 4 core Docker backend services orchestrated via Docker Compose:\n\n'
+                  '1. unotusk-api (FastAPI): Bound to port 8000 on host (0.0.0.0:8000). Provides REST endpoints, JWT authentication (HS256), request correlation middleware (X-Request-ID), and LAN CORS validation.\n'
+                  '2. unotusk-worker: Background ingestion engine executing AST parsing, symbol extraction, git diff+commit pairing, and semantic embedding generation.\n'
+                  '3. unotusk-postgres: PostgreSQL database with pgvector extension for high-dimensional code retrieval. Internal port 5432 only (strictly unmapped to host).\n'
+                  '4. unotusk-redis: High-throughput task queue and caching layer. Internal port 6379 only (isolated from LAN).\n\n'
+                  'Frontend clients include the Flutter Employee App (Windows, macOS, Linux native desktop bundles) and the Server Setup App (host manager with dynamic RFC 1918 LAN IP discovery).',
               tag: 'CONFIRMED',
             ),
           ],
           meta:
-              'Query resolved · 847ms · 3 sources · ADR #7 · Slack #arch-decisions · ENG-1042',
+              'Query resolved · 310ms · 4 sources · LAN_PILOT_RUNBOOK.md · LAN_PILOT_MATRIX.md · docker-compose.yml',
           queryType: 'warm',
           confidence: 'confirmed',
           reasoning: ReasoningModel(
-            compositeScore: 0.89,
+            compositeScore: 0.98,
             components: [
-              ScoreComponent(label: 'P_class', score: 0.93),
-              ScoreComponent(label: 'S_auth', score: 0.86),
-              ScoreComponent(label: 'T_match', score: 0.91),
-              ScoreComponent(label: 'D_atom', score: 0.88),
-              ScoreComponent(label: 'R_ragas', score: 0.87),
+              ScoreComponent(label: 'P_class', score: 0.99),
+              ScoreComponent(label: 'S_auth', score: 0.97),
+              ScoreComponent(label: 'T_match', score: 0.98),
+              ScoreComponent(label: 'D_atom', score: 0.96),
+              ScoreComponent(label: 'R_ragas', score: 0.99),
             ],
             routingPath: [
               'Warm query',
-              'Delta write-back (20 candidates)',
+              'AST & service manifest index',
               'Confirmed gate (≥0.80)',
               'Output'
             ],
             ontologyEdges: [
-              'authored_by',
-              'references',
-              'supersedes',
-              'resolves'
+              'composed_of',
+              'orchestrates',
+              'exposes',
+              'isolates'
             ],
             citations: [
-              'ADR #7',
-              'ENG-1042',
-              'Slack #arch-decisions',
-              'GH PR #7210'
+              'LAN_PILOT_RUNBOOK.md §1',
+              'LAN_PILOT_MATRIX.md §1',
+              'docker-compose.yml',
+              'TASK-LAN-001'
             ],
           ),
         ),
-        'Why choose Postgres over Mongo in March?': const QueryResponseData(
+
+        'Explain Docker services port isolation and security':
+            const QueryResponseData(
           segments: [
             ResponseSegment(
               text:
-                  'On March 14, the team voted 4–1 to proceed with Postgres. The primary driver was the existing RDS infrastructure and the billing schema\'s requirement for strong relational integrity.',
-              tag: 'CONFIRMED',
-            ),
-            ResponseSegment(
-              text:
-                  'MongoDB was eliminated after a schema-migration audit flagged 23 inconsistencies requiring manual reconciliation. No recount was requested.',
-              tag: 'CONFIRMED',
-            ),
-            ResponseSegment(
-              text:
-                  'ADR #7, merged by @sam on March 16 and cross-linked in ENG-1042, formally closed the decision. No alternative was raised in any indexed thread after that merge.',
+                  'The Unotusk MVP LAN deployment enforces strict zero-trust network boundaries:\n\n'
+                  '• Exposed Boundary: ONLY Port 8000 (unotusk-api) is bound to 0.0.0.0:8000 to serve employee desktop clients on the LAN.\n'
+                  '• Database & Redis Isolation: unotusk-postgres (5432) and unotusk-redis (6379) are attached solely to the private Docker bridge network ("unotusk-network"). Their host port bindings are null, rendering them completely unreachable from any laptop on the LAN.\n'
+                  '• CORS LAN Whitelisting: The FastAPI backend enforces an allow_origin_regex strictly limiting traffic to RFC 1918 private subnets (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16) and localhost.\n'
+                  '• Zero-Secret Logging: Both the Python server and Flutter clients execute automatic regex sanitization across log streams, stripping JWTs, Bearer headers, API keys, and connection strings.',
               tag: 'CONFIRMED',
             ),
           ],
           meta:
-              'Query resolved · 847ms · 3 sources · ADR #7 · Slack #arch-decisions · ENG-1042',
+              'Query resolved · 280ms · 3 sources · LAN_PILOT_MATRIX.md §3 · TASK-LAN-002 · TASK-LAN-006',
           queryType: 'warm',
           confidence: 'confirmed',
           reasoning: ReasoningModel(
-            compositeScore: 0.89,
+            compositeScore: 0.97,
             components: [
-              ScoreComponent(label: 'P_class', score: 0.93),
-              ScoreComponent(label: 'S_auth', score: 0.86),
-              ScoreComponent(label: 'T_match', score: 0.91),
-              ScoreComponent(label: 'D_atom', score: 0.88),
-              ScoreComponent(label: 'R_ragas', score: 0.87),
+              ScoreComponent(label: 'P_class', score: 0.98),
+              ScoreComponent(label: 'S_auth', score: 0.96),
+              ScoreComponent(label: 'T_match', score: 0.97),
+              ScoreComponent(label: 'D_atom', score: 0.95),
+              ScoreComponent(label: 'R_ragas', score: 0.98),
             ],
             routingPath: [
               'Warm query',
-              'Delta write-back (20 candidates)',
+              'Network security topology',
               'Confirmed gate (≥0.80)',
               'Output'
             ],
             ontologyEdges: [
-              'authored_by',
-              'references',
-              'supersedes',
-              'resolves'
+              'protects',
+              'isolates',
+              'sanitizes',
+              'validates'
             ],
             citations: [
-              'ADR #7',
-              'ENG-1042',
-              'Slack #arch-decisions',
-              'GH PR #7210'
+              'LAN_PILOT_MATRIX.md §3',
+              'TASK-LAN-002',
+              'TASK-LAN-006',
+              'main.py'
             ],
           ),
         ),
-        'Which team owns the auth service after the Figma handoff?':
+
+        'Summarize the LAN pilot topology and device assignments':
             const QueryResponseData(
           segments: [
             ResponseSegment(
               text:
-                  'Ownership transferred to the Platform team on June 3, documented in the handoff sheet attached to ENG-2847 and countersigned by both team leads on June 1.',
-              tag: 'CONFIRMED',
-            ),
-            ResponseSegment(
-              text:
-                  'PagerDuty on-call rotation was updated June 4. The Runbook link in the internal wiki still points to the Frontend team Slack channel — no ticket tracking that correction was found in any indexed source.',
-              tag: 'INFERRED',
-              note: 'no ticket confirming wiki update',
-            ),
-          ],
-          meta:
-              'Query resolved · 1.2s · 4 sources · ENG-2847 · PagerDuty · Confluence wiki',
-          queryType: 'cold',
-          confidence: 'uncertain',
-          reasoning: ReasoningModel(
-            compositeScore: 0.67,
-            components: [
-              ScoreComponent(label: 'P_class', score: 0.74),
-              ScoreComponent(label: 'S_auth', score: 0.61),
-              ScoreComponent(label: 'T_match', score: 0.72),
-              ScoreComponent(label: 'D_atom', score: 0.60),
-              ScoreComponent(label: 'R_ragas', score: 0.68),
-            ],
-            routingPath: [
-              'Cold query',
-              'Full re-rank (40 candidates)',
-              'Uncertain gate (0.50–0.80)',
-              'Output with caveats'
-            ],
-            ontologyEdges: ['authored_by', 'maintains', 'references'],
-            citations: [
-              'ENG-2847',
-              'PagerDuty roster Jun-4',
-              'Confluence wiki',
-              'Slack #handoffs'
-            ],
-          ),
-        ),
-        'Which team owns the auth service?': const QueryResponseData(
-          segments: [
-            ResponseSegment(
-              text:
-                  'Ownership transferred to the Platform team on June 3, documented in the handoff sheet attached to ENG-2847 and countersigned by both team leads on June 1.',
-              tag: 'CONFIRMED',
-            ),
-            ResponseSegment(
-              text:
-                  'PagerDuty on-call rotation was updated June 4. The Runbook link in the internal wiki still points to the Frontend team Slack channel — no ticket tracking that correction was found in any indexed source.',
-              tag: 'INFERRED',
-              note: 'no ticket confirming wiki update',
-            ),
-          ],
-          meta:
-              'Query resolved · 1.2s · 4 sources · ENG-2847 · PagerDuty · Confluence wiki',
-          queryType: 'cold',
-          confidence: 'uncertain',
-          reasoning: ReasoningModel(
-            compositeScore: 0.67,
-            components: [
-              ScoreComponent(label: 'P_class', score: 0.74),
-              ScoreComponent(label: 'S_auth', score: 0.61),
-              ScoreComponent(label: 'T_match', score: 0.72),
-              ScoreComponent(label: 'D_atom', score: 0.60),
-              ScoreComponent(label: 'R_ragas', score: 0.68),
-            ],
-            routingPath: [
-              'Cold query',
-              'Full re-rank (40 candidates)',
-              'Uncertain gate (0.50–0.80)',
-              'Output with caveats'
-            ],
-            ontologyEdges: ['authored_by', 'maintains', 'references'],
-            citations: [
-              'ENG-2847',
-              'PagerDuty roster Jun-4',
-              'Confluence wiki',
-              'Slack #handoffs'
-            ],
-          ),
-        ),
-        'Generate a BDD spec for the rate-limiter change':
-            const QueryResponseData(
-          segments: [
-            ResponseSegment(
-              text:
-                  'Verified BDD contract generated from PR #441 and ADR #12 decisions.',
+                  'The LAN Pilot operates on a private subnet (10.0.0.0/24) with 7 designated hardware nodes:\n\n'
+                  '• Node 1 (SRV-01): Linux x86_64 host (IP 10.0.0.59) running Docker stack (API, Worker, Postgres, Redis).\n'
+                  '• Nodes 2-4: Windows 10/11 laptops (10.0.0.101-103) running unotusk-employee-windows-x64.zip for dev1@acme.com, dev2@acme.com, and qa1@acme.com.\n'
+                  '• Node 5 (WIN-04): Windows 11 laptop (10.0.0.104) assigned to lead@acme.com (Admin) for codebase ingestion.\n'
+                  '• Nodes 6-7 (MAC-01/02): macOS laptops (10.0.0.105-106) running unotusk-employee-macos.tar.gz for dev3@acme.com and dev4@acme.com.\n\n'
+                  'All 6 client nodes communicate directly with http://10.0.0.59:8000 with sub-100ms response times.',
               tag: 'CONFIRMED',
             ),
           ],
           meta:
-              'Query resolved · 1.4s · PR #441 · ADR #12 · 6 test assertions',
-          queryType: 'cold',
-          confidence: 'confirmed',
-          bdd: BddSpec(
-            given:
-                'A multi-tenant API gateway handling authenticated traffic and anonymous tiers.',
-            when:
-                'A request arrives exceeding the per-tenant burst threshold of 200 req/s.',
-            then:
-                'The token bucket throttles excess requests with HTTP 429 and Retry-After header while recording audit metrics.',
-            kpi: 'Sub-millisecond token lookup latency (<0.8ms p99)',
-            kpiTag: 'INFERRED',
-            kpiNote: 'derived from RDS cache SLA',
-            testCases: [
-              TestCase(
-                  id: 1,
-                  desc:
-                      'Tenant within allowed 200 req/s quota receives uninterrupted HTTP 200 responses.'),
-              TestCase(
-                  id: 2,
-                  desc:
-                      'Tenant bursting beyond 200 req/s receives HTTP 429 with calculated Retry-After header.'),
-              TestCase(
-                  id: 3,
-                  desc:
-                      'Anonymous endpoints fall back to global 50 req/s bucket without consuming tenant allocation.'),
-            ],
-            risks: [
-              RiskItem(
-                  tag: 'CONFIRMED',
-                  text:
-                      'Redis failover state causes rate-limiter to fail-open under emergency conditions (ADR #12).'),
-              RiskItem(
-                  tag: 'INFERRED',
-                  text:
-                      'High burst traffic on unauthenticated endpoints may exhaust ingress socket pool before token check.'),
-            ],
-          ),
-          reasoning: ReasoningModel(
-            compositeScore: 0.84,
-            components: [
-              ScoreComponent(label: 'P_class', score: 0.89),
-              ScoreComponent(label: 'S_auth', score: 0.82),
-              ScoreComponent(label: 'T_match', score: 0.88),
-              ScoreComponent(label: 'D_atom', score: 0.83),
-              ScoreComponent(label: 'R_ragas', score: 0.85),
-            ],
-            routingPath: [
-              'Cold query',
-              'Spec extraction (PR #441)',
-              'BDD contract synthesis',
-              'Confirmed gate'
-            ],
-            ontologyEdges: ['specifies', 'verifies', 'tests', 'implements'],
-            citations: ['PR #441', 'ADR #12', 'ENG-1804', 'Jest integration'],
-          ),
-        ),
-        'Generate a BDD spec for rate-limiter': const QueryResponseData(
-          segments: [
-            ResponseSegment(
-              text:
-                  'Verified BDD contract generated from PR #441 and ADR #12 decisions.',
-              tag: 'CONFIRMED',
-            ),
-          ],
-          meta:
-              'Query resolved · 1.4s · PR #441 · ADR #12 · 6 test assertions',
-          queryType: 'cold',
-          confidence: 'confirmed',
-          bdd: BddSpec(
-            given:
-                'A multi-tenant API gateway handling authenticated traffic and anonymous tiers.',
-            when:
-                'A request arrives exceeding the per-tenant burst threshold of 200 req/s.',
-            then:
-                'The token bucket throttles excess requests with HTTP 429 and Retry-After header while recording audit metrics.',
-            kpi: 'Sub-millisecond token lookup latency (<0.8ms p99)',
-            kpiTag: 'INFERRED',
-            kpiNote: 'derived from RDS cache SLA',
-            testCases: [
-              TestCase(
-                  id: 1,
-                  desc:
-                      'Tenant within allowed 200 req/s quota receives uninterrupted HTTP 200 responses.'),
-              TestCase(
-                  id: 2,
-                  desc:
-                      'Tenant bursting beyond 200 req/s receives HTTP 429 with calculated Retry-After header.'),
-              TestCase(
-                  id: 3,
-                  desc:
-                      'Anonymous endpoints fall back to global 50 req/s bucket without consuming tenant allocation.'),
-            ],
-            risks: [
-              RiskItem(
-                  tag: 'CONFIRMED',
-                  text:
-                      'Redis failover state causes rate-limiter to fail-open under emergency conditions (ADR #12).'),
-              RiskItem(
-                  tag: 'INFERRED',
-                  text:
-                      'High burst traffic on unauthenticated endpoints may exhaust ingress socket pool before token check.'),
-            ],
-          ),
-        ),
-        'FPR trend on auth service this month': const QueryResponseData(
-          segments: [
-            ResponseSegment(
-              text:
-                  'Auth Service False Positive Rate (FPR) currently sits at 0.64, up +0.02 from the 30-day baseline of 0.62.',
-              tag: 'CONFIRMED',
-            ),
-            ResponseSegment(
-              text:
-                  'The uptick occurred following PR #388 (OIDC federation rework) which introduced 34 new decision events awaiting historical reconciliation.',
-              tag: 'CONFIRMED',
-            ),
-            ResponseSegment(
-              text:
-                  'Projected to drop back to 0.61 once the Okta credential migration PR merges next Tuesday.',
-              tag: 'INFERRED',
-              note: 'derived from sprint commit velocity',
-            ),
-          ],
-          meta:
-              'Query resolved · 710ms · Datadog FPR telemetry · GH #388 · 34 events',
-          queryType: 'hot',
+              'Query resolved · 350ms · 2 sources · LAN_PILOT_MATRIX.md §2 · LAN_PILOT_RUNBOOK.md §8',
+          queryType: 'warm',
           confidence: 'confirmed',
           reasoning: ReasoningModel(
-            compositeScore: 0.71,
+            compositeScore: 0.99,
             components: [
-              ScoreComponent(label: 'P_class', score: 0.78),
-              ScoreComponent(label: 'S_auth', score: 0.69),
-              ScoreComponent(label: 'T_match', score: 0.74),
-              ScoreComponent(label: 'D_atom', score: 0.65),
-              ScoreComponent(label: 'R_ragas', score: 0.70),
+              ScoreComponent(label: 'P_class', score: 1.0),
+              ScoreComponent(label: 'S_auth', score: 0.98),
+              ScoreComponent(label: 'T_match', score: 0.99),
+              ScoreComponent(label: 'D_atom', score: 0.98),
+              ScoreComponent(label: 'R_ragas', score: 0.99),
             ],
             routingPath: [
-              'Hot query',
-              'Telemetry lookup',
-              'FPR delta calculation',
+              'Warm query',
+              'Hardware topology map',
+              'Confirmed gate',
               'Output'
             ],
-            ontologyEdges: ['tracks', 'measures', 'alerts_on'],
-            citations: ['Datadog FPR-01', 'Auth Service telemetry', 'GH #388'],
+            ontologyEdges: ['allocates', 'assigns', 'routes'],
+            citations: ['LAN_PILOT_MATRIX.md §2', 'LAN_PILOT_RUNBOOK.md §8'],
+          ),
+        ),
+
+        'How does AST parsing and symbol extraction work?':
+            const QueryResponseData(
+          segments: [
+            ResponseSegment(
+              text:
+                  'When a codebase is linked (e.g. Unotusk Core API on MVP_build branch), unotusk-worker triggers multi-pass ingestion:\n\n'
+                  '1. AST Extraction: Traverses Python/Dart/TS source files to extract classes, methods, decorators, route handlers, and call hierarchies.\n'
+                  '2. Commit Correlation: Indexes Git commit histories and diff chunks, associating code modifications with architectural decisions.\n'
+                  '3. Vector Indexing: Generates dense semantic embeddings stored in PostgreSQL with pgvector, enabling sub-second natural language code retrieval.\n'
+                  '4. Zero Cross-Talk: The background worker isolates project graphs per organization so multiple clients can query concurrently without data bleed.',
+              tag: 'CONFIRMED',
+            ),
+          ],
+          meta:
+              'Query resolved · 420ms · 3 sources · LAN_PILOT_TASK_SHEET.md §4 · unotusk-worker',
+          queryType: 'warm',
+          confidence: 'confirmed',
+          reasoning: ReasoningModel(
+            compositeScore: 0.95,
+            components: [
+              ScoreComponent(label: 'P_class', score: 0.96),
+              ScoreComponent(label: 'S_auth', score: 0.94),
+              ScoreComponent(label: 'T_match', score: 0.95),
+              ScoreComponent(label: 'D_atom', score: 0.93),
+              ScoreComponent(label: 'R_ragas', score: 0.96),
+            ],
+            routingPath: [
+              'Warm query',
+              'AST engine specifications',
+              'Confirmed gate',
+              'Output'
+            ],
+            ontologyEdges: ['extracts', 'indexes', 'embeds'],
+            citations: ['TASK-LAN-005', 'LAN_PILOT_RUNBOOK.md §9'],
           ),
         ),
       };
 
+  // ─── Domain Rules from LAN Pilot Security Matrix ───
   static const Set<String> blockedDomains = {
     'gmail.com',
     'yahoo.com',
@@ -781,8 +617,14 @@ class MockData {
   static const Map<String, Map<String, String>> knownOrganizations = {
     'acme.com': {
       'name': 'Acme Corp',
-      'provider': 'Google Workspace OIDC',
-      'issuer': 'https://accounts.google.com',
+      'provider': 'Acme Enterprise OIDC (10.0.0.59:8000)',
+      'issuer': 'http://10.0.0.59:8000/auth',
+      'type': 'custom',
+    },
+    'unotusk.com': {
+      'name': 'Unotusk Internal',
+      'provider': 'Unotusk Local LAN SSO (10.0.0.59:8000)',
+      'issuer': 'http://10.0.0.59:8000',
       'type': 'google',
     },
     'meta.com': {
@@ -796,12 +638,6 @@ class MockData {
       'provider': 'Microsoft Entra ID (Azure AD)',
       'issuer': 'https://login.microsoftonline.com',
       'type': 'microsoft',
-    },
-    'unotusk.com': {
-      'name': 'Unotusk Internal',
-      'provider': 'Google Workspace OIDC',
-      'issuer': 'https://accounts.google.com',
-      'type': 'google',
     },
   };
 }
