@@ -36,31 +36,42 @@ class _IngestionFeedScreenState extends State<IngestionFeedScreen> {
     }
   }
 
-  void _triggerIngestion(String id) {
+  Future<void> _triggerIngestion(String id) async {
     setState(() {
       _processingProjectId = id;
     });
 
-    Timer(const Duration(milliseconds: 3000), () {
-      if (!mounted) return;
-      setState(() {
-        _processingProjectId = null;
-        _projects = _projects.map((p) {
-          if (p.id == id) {
-            return ProjectItem(
-              id: p.id,
-              name: p.name,
-              upsStatus: 'active',
-              ingestionStatus: 'live',
-              lastIngestion: 'Just now',
-              fpr: (p.fpr + 0.02).clamp(0.0, 1.0),
-              days: p.days + 1,
-            );
-          }
-          return p;
-        }).toList();
-      });
-    });
+    try {
+      await ApiService.triggerReindex(id);
+      await Future.delayed(const Duration(milliseconds: 1000));
+      final projects = await ApiService.fetchProjects();
+      final activities = await ApiService.fetchActivities();
+      if (mounted) {
+        setState(() {
+          _projects = projects;
+          _activities = activities;
+          _processingProjectId = null;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Reindex initiated on backend http://10.0.0.59:8000'),
+            backgroundColor: Color(0xFF1B5E20),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _processingProjectId = null;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Reindex error: $e'),
+            backgroundColor: const Color(0xFFB71C1C),
+          ),
+        );
+      }
+    }
   }
 
   @override

@@ -12,6 +12,8 @@ class TopNavBar extends StatelessWidget {
   final bool showSidebarToggle;
   final VoidCallback? onToggleSidebar;
   final String? projectName;
+  final String? repoFullName;
+  final String? branchName;
   final VoidCallback? onBackToProjects;
 
   const TopNavBar({
@@ -25,16 +27,24 @@ class TopNavBar extends StatelessWidget {
     this.showSidebarToggle = false,
     this.onToggleSidebar,
     this.projectName,
+    this.repoFullName,
+    this.branchName,
     this.onBackToProjects,
   });
 
   @override
   Widget build(BuildContext context) {
+    final displayName = repoFullName ??
+        ((projectName != null && projectName!.isNotEmpty)
+            ? 'Kushall-07/$projectName'
+            : 'Kushall-07/SyncGuard');
+    final displayBranch = branchName ?? 'main';
+
     return Container(
       height: 52,
       padding: showSidebarToggle
           ? const EdgeInsets.fromLTRB(10, 0, 16, 0)
-          : const EdgeInsets.symmetric(horizontal: 28),
+          : const EdgeInsets.symmetric(horizontal: 24),
       color: Colors.transparent,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -57,50 +67,44 @@ class TopNavBar extends StatelessWidget {
                     ),
                   ),
                 ),
-              if (onBackToProjects != null) ...[
-                const SizedBox(width: 8),
-                InkWell(
-                  onTap: onBackToProjects,
-                  borderRadius: BorderRadius.circular(6),
-                  child: Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(LucideIcons.arrowLeft,
-                            size: 14, color: palette.textSec),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Projects',
-                          style: UnoTypography.body(
-                            color: palette.textSec,
-                            fontSize: 12,
-                          ),
+              // Project Switcher Pill matching Kushall-07/SyncGuard · main ↕
+              InkWell(
+                onTap: onBackToProjects,
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: palette.bgSurface,
+                    border: Border.all(color: palette.div),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        LucideIcons.folder,
+                        size: 14,
+                        color: palette.accent,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '$displayName · $displayBranch',
+                        style: UnoTypography.body(
+                          color: palette.text,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
                         ),
-                        if (projectName != null &&
-                            projectName!.isNotEmpty) ...[
-                          Text(
-                            ' / ',
-                            style: UnoTypography.mono(
-                              color: palette.textSec,
-                              fontSize: 12,
-                            ),
-                          ),
-                          Text(
-                            projectName!,
-                            style: UnoTypography.body(
-                              color: palette.text,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
+                      ),
+                      const SizedBox(width: 6),
+                      Icon(
+                        LucideIcons.chevronsUpDown,
+                        size: 13,
+                        color: palette.textSec,
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ],
           ),
           Row(
@@ -168,7 +172,7 @@ class TopNavBar extends StatelessWidget {
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Icon(
-                    isDark ? LucideIcons.sun : LucideIcons.moon,
+                    isDark ? LucideIcons.moon : LucideIcons.sun,
                     size: 14,
                     color: palette.textSec,
                   ),

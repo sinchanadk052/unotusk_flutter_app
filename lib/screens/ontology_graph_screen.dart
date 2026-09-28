@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
@@ -13,7 +14,8 @@ class OntologyGraphScreen extends StatefulWidget {
 }
 
 class _OntologyGraphScreenState extends State<OntologyGraphScreen> {
-  int? _hoveredNodeId;
+  // Default selected node: 0 (OIDC Decis…) to match the reference view
+  int? _hoveredNodeId = 0;
   List<OntologyNode> _nodes = [];
   List<List<int>> _edges = [];
 
@@ -34,52 +36,60 @@ class _OntologyGraphScreenState extends State<OntologyGraphScreen> {
     }
   }
 
-  Color _getNodeColor(String type) {
-    switch (type) {
-      case 'Service':
-        return UnoPalette.entityService;
-      case 'Decision':
-        return UnoPalette.entityDecision;
-      case 'Commit':
-        return UnoPalette.entityCommit;
-      case 'Ticket':
-        return UnoPalette.entityTicket;
-      case 'Thread':
-        return UnoPalette.entityThread;
-      case 'Person':
+  Color _getNodeColor(int id) {
+    switch (id) {
+      case 0:
+        return const Color(0xFFDA7756); // Warm terracotta
+      case 1:
+      case 7:
+        return const Color(0xFF5BA495); // Mint Teal (Services)
+      case 2:
+      case 4:
+      case 5:
+        return const Color(0xFFE5A93C); // Amber Gold (Commits / Decisions / DB)
+      case 3:
+      case 8:
+        return const Color(0xFFE06C75); // Rose Pink (Tickets / Threads)
+      case 6:
+        return const Color(0xFF9E9E94); // Warm Gray / Tan (Persons)
       default:
-        return UnoPalette.entityPerson;
+        return const Color(0xFF9E9E94);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 36),
+      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 28),
       child: Center(
         child: Container(
-          constraints: const BoxConstraints(maxWidth: 960),
+          constraints: const BoxConstraints(maxWidth: 1040),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Header
+              // Header Category Tag
               Text(
                 'ONTOLOGY GRAPH',
                 style: UnoTypography.mono(
                   color: widget.palette.textSec,
-                  fontSize: 10,
+                  fontSize: 11,
                   letterSpacing: 0.8,
                 ),
               ),
               const SizedBox(height: 6),
+
+              // Title
               Text(
                 'Knowledge Graph',
                 style: UnoTypography.brandSerif(
                   palette: widget.palette,
-                  fontSize: 26,
+                  fontSize: 28,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(height: 6),
+
+              // Subtitle
               Text(
                 'Entity relationships indexed across commits, tickets, threads, and decisions.',
                 style: UnoTypography.body(
@@ -89,173 +99,69 @@ class _OntologyGraphScreenState extends State<OntologyGraphScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Interactive SVG / Canvas Graph Container
+              // Main Graph Container Card
               Container(
-                height: 480,
+                height: 560,
                 decoration: BoxDecoration(
                   color: widget.palette.bgSurface,
                   border: Border.all(color: widget.palette.div),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(20),
                 child: LayoutBuilder(
                   builder: (context, constraints) {
-                    final scaleX = constraints.maxWidth / 840.0;
-                    final scaleY = constraints.maxHeight / 460.0;
-                    final scale = scaleX < scaleY ? scaleX : scaleY;
+                    final scaleX = constraints.maxWidth / 1000.0;
+                    final scaleY = constraints.maxHeight / 560.0;
+                    final scale = math.min(scaleX, scaleY);
+                    final offsetX = (constraints.maxWidth - 1000.0 * scale) / 2;
+                    final offsetY = (constraints.maxHeight - 560.0 * scale) / 2;
 
-                    return GestureDetector(
-                      onTapUp: (details) {
-                        // find tapped node
-                        int? tappedId;
-                        for (final node in _nodes) {
-                          final nx = node.cx * scale;
-                          final ny = node.cy * scale;
-                          final distSq = (details.localPosition.dx - nx) *
-                                  (details.localPosition.dx - nx) +
-                              (details.localPosition.dy - ny) *
-                                  (details.localPosition.dy - ny);
-                          if (distSq < 400) {
-                            tappedId = node.id;
-                            break;
+                    return MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTapUp: (details) {
+                          int? tappedId;
+                          for (final node in _nodes) {
+                            final nx = node.cx * scale + offsetX;
+                            final ny = node.cy * scale + offsetY;
+                            final distSq = (details.localPosition.dx - nx) *
+                                    (details.localPosition.dx - nx) +
+                                (details.localPosition.dy - ny) *
+                                    (details.localPosition.dy - ny);
+                            if (distSq < 1400) {
+                              tappedId = node.id;
+                              break;
+                            }
                           }
-                        }
-                        setState(() {
-                          _hoveredNodeId =
-                              _hoveredNodeId == tappedId ? null : tappedId;
-                        });
-                      },
-                      child: CustomPaint(
-                        size: Size(constraints.maxWidth, constraints.maxHeight),
-                        painter: _OntologyGraphPainter(
-                          nodes: _nodes,
-                          edges: _edges,
-                          hoveredNodeId: _hoveredNodeId,
-                          palette: widget.palette,
-                          scale: scale,
-                          getNodeColor: _getNodeColor,
+                          setState(() {
+                            if (tappedId != null) {
+                              _hoveredNodeId =
+                                  _hoveredNodeId == tappedId ? 0 : tappedId;
+                            }
+                          });
+                        },
+                        child: CustomPaint(
+                          size: Size(constraints.maxWidth, constraints.maxHeight),
+                          painter: _OntologyGraphPainter(
+                            nodes: _nodes,
+                            edges: _edges,
+                            hoveredNodeId: _hoveredNodeId,
+                            palette: widget.palette,
+                            scale: scale,
+                            offsetX: offsetX,
+                            offsetY: offsetY,
+                            getNodeColor: _getNodeColor,
+                          ),
                         ),
                       ),
                     );
                   },
                 ),
               ),
-              const SizedBox(height: 16),
-
-              // Legend
-              Wrap(
-                spacing: 20,
-                runSpacing: 10,
-                children: [
-                  'Service',
-                  'Decision',
-                  'Commit',
-                  'Ticket',
-                  'Thread',
-                  'Person'
-                ].map((type) {
-                  final color = _getNodeColor(type);
-                  return Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: color,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        type.toUpperCase(),
-                        style: UnoTypography.mono(
-                          color: widget.palette.textSec,
-                          fontSize: 10,
-                          letterSpacing: 0.6,
-                        ),
-                      ),
-                    ],
-                  );
-                }).toList(),
-              ),
-
-              if (_hoveredNodeId != null) ...[
-                const SizedBox(height: 20),
-                _buildNodeDetailsCard(),
-              ],
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildNodeDetailsCard() {
-    if (_nodes.isEmpty) return const SizedBox();
-    final node = _nodes.firstWhere(
-      (n) => n.id == _hoveredNodeId,
-      orElse: () => _nodes.first,
-    );
-    final connectedEdges = _edges
-        .where((e) => e[0] == node.id || e[1] == node.id)
-        .length;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: widget.palette.bgElevated,
-        border: Border.all(color: widget.palette.accent),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 10,
-                height: 10,
-                decoration: BoxDecoration(
-                  color: _getNodeColor(node.type),
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Text(
-                node.label,
-                style: UnoTypography.body(
-                  color: widget.palette.text,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: _getNodeColor(node.type).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  node.type.toUpperCase(),
-                  style: UnoTypography.mono(
-                    color: _getNodeColor(node.type),
-                    fontSize: 9,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          Text(
-            '$connectedEdges active relationships',
-            style: UnoTypography.mono(
-              color: widget.palette.textSec,
-              fontSize: 11,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -267,7 +173,9 @@ class _OntologyGraphPainter extends CustomPainter {
   final int? hoveredNodeId;
   final UnoPalette palette;
   final double scale;
-  final Color Function(String) getNodeColor;
+  final double offsetX;
+  final double offsetY;
+  final Color Function(int) getNodeColor;
 
   _OntologyGraphPainter({
     required this.nodes,
@@ -275,83 +183,179 @@ class _OntologyGraphPainter extends CustomPainter {
     required this.hoveredNodeId,
     required this.palette,
     required this.scale,
+    required this.offsetX,
+    required this.offsetY,
     required this.getNodeColor,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Center the graph
-    final offsetX = (size.width - 840 * scale) / 2;
-    final offsetY = (size.height - 460 * scale) / 2;
+    if (nodes.isEmpty) return;
 
-    // Draw Edges
+    final isDark = palette.bgBase == const Color(0xFF181816);
+    final inactiveEdgeColor =
+        isDark ? const Color(0xFF2E2E2A) : palette.div.withValues(alpha: 0.6);
+    const activeEdgeColor = Color(0xFFDA7756); // Warm terracotta
+
+    // ─────────────────────────────────────────────────────────
+    // 1. Draw Inactive Edges (behind)
+    // ─────────────────────────────────────────────────────────
+    final inactiveEdgePaint = Paint()
+      ..color = inactiveEdgeColor
+      ..strokeWidth = 1.0
+      ..style = PaintingStyle.stroke;
+
     for (final edge in edges) {
+      if (edge[0] >= nodes.length || edge[1] >= nodes.length) continue;
       final from = nodes[edge[0]];
       final to = nodes[edge[1]];
 
-      final isHighlight = hoveredNodeId == from.id || hoveredNodeId == to.id;
+      final isHighlight = (hoveredNodeId != null &&
+          (hoveredNodeId == from.id || hoveredNodeId == to.id));
 
-      final paint = Paint()
-        ..color = isHighlight
-            ? palette.accent.withValues(alpha: 0.8)
-            : palette.div.withValues(alpha: 0.45)
-        ..strokeWidth = isHighlight ? 1.8 : 1.0
-        ..style = PaintingStyle.stroke;
-
-      final p1 = Offset(from.cx * scale + offsetX, from.cy * scale + offsetY);
-      final p2 = Offset(to.cx * scale + offsetX, to.cy * scale + offsetY);
-
-      canvas.drawLine(p1, p2, paint);
+      if (!isHighlight) {
+        final p1 = Offset(from.cx * scale + offsetX, from.cy * scale + offsetY);
+        final p2 = Offset(to.cx * scale + offsetX, to.cy * scale + offsetY);
+        canvas.drawLine(p1, p2, inactiveEdgePaint);
+      }
     }
 
-    // Draw Nodes
+    // ─────────────────────────────────────────────────────────
+    // 2. Draw Active Edges (highlighted in terracotta)
+    // ─────────────────────────────────────────────────────────
+    final activeEdgePaint = Paint()
+      ..color = activeEdgeColor
+      ..strokeWidth = 2.0
+      ..style = PaintingStyle.stroke;
+
+    for (final edge in edges) {
+      if (edge[0] >= nodes.length || edge[1] >= nodes.length) continue;
+      final from = nodes[edge[0]];
+      final to = nodes[edge[1]];
+
+      final isHighlight = (hoveredNodeId != null &&
+          (hoveredNodeId == from.id || hoveredNodeId == to.id));
+
+      if (isHighlight) {
+        final p1 = Offset(from.cx * scale + offsetX, from.cy * scale + offsetY);
+        final p2 = Offset(to.cx * scale + offsetX, to.cy * scale + offsetY);
+        canvas.drawLine(p1, p2, activeEdgePaint);
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // 3. Draw Unselected Nodes (Hollow circles + monospace label)
+    // ─────────────────────────────────────────────────────────
     for (final node in nodes) {
-      final isHovered = hoveredNodeId == node.id;
-      final nodeColor = getNodeColor(node.type);
+      if (node.id == hoveredNodeId) continue; // Drawn in step 4
+
       final center =
           Offset(node.cx * scale + offsetX, node.cy * scale + offsetY);
-      final radius = isHovered ? 10.0 : 7.0;
+      final color = getNodeColor(node.id);
+      const radius = 7.0;
 
-      // Glow when hovered
-      if (isHovered) {
-        final glowPaint = Paint()
-          ..color = nodeColor.withValues(alpha: 0.3)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
-        canvas.drawCircle(center, radius + 4, glowPaint);
-      }
-
-      // Node background
-      final fillPaint = Paint()
-        ..color = isHovered ? nodeColor : palette.bgElevated
+      // Inner fill matches card background so line underneath is clipped
+      final innerPaint = Paint()
+        ..color = palette.bgSurface
         ..style = PaintingStyle.fill;
-      canvas.drawCircle(center, radius, fillPaint);
+      canvas.drawCircle(center, radius, innerPaint);
 
-      // Node border
+      // Hollow ring stroke
       final strokePaint = Paint()
-        ..color = nodeColor
-        ..strokeWidth = isHovered ? 2.2 : 1.5
+        ..color = color
+        ..strokeWidth = 2.0
         ..style = PaintingStyle.stroke;
       canvas.drawCircle(center, radius, strokePaint);
 
-      // Node Label
+      // Monospace label below
       final textSpan = TextSpan(
         text: node.label,
-        style: TextStyle(
+        style: const TextStyle(
           fontFamily: 'monospace',
-          fontSize: 9,
-          color: isHovered ? palette.text : palette.textSec,
-          fontWeight: isHovered ? FontWeight.bold : FontWeight.normal,
+          fontSize: 9.5,
+          color: Color(0xFF8A8A82),
+          letterSpacing: 0.2,
         ),
       );
       final textPainter = TextPainter(
         text: textSpan,
         textDirection: TextDirection.ltr,
-      );
-      textPainter.layout();
+      )..layout();
+
       textPainter.paint(
         canvas,
-        Offset(center.dx - textPainter.width / 2, center.dy + 12),
+        Offset(center.dx - textPainter.width / 2, center.dy + 14.0),
       );
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // 4. Draw Selected Active Node (Solid circle + glow + pill badge)
+    // ─────────────────────────────────────────────────────────
+    if (hoveredNodeId != null) {
+      final activeIndex = nodes.indexWhere((n) => n.id == hoveredNodeId);
+      if (activeIndex != -1) {
+        final activeNode = nodes[activeIndex];
+        final center = Offset(
+            activeNode.cx * scale + offsetX, activeNode.cy * scale + offsetY);
+        const radius = 8.5;
+
+        // Glow halo (radial blur)
+        final glowPaint = Paint()
+          ..color = const Color(0xFFDA7756).withValues(alpha: 0.38)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 14);
+        canvas.drawCircle(center, 22.0, glowPaint);
+
+        // Solid terracotta circle
+        final fillPaint = Paint()
+          ..color = const Color(0xFFDA7756)
+          ..style = PaintingStyle.fill;
+        canvas.drawCircle(center, radius, fillPaint);
+
+        // Pill badge background with monospace label
+        final textSpan = TextSpan(
+          text: activeNode.label,
+          style: const TextStyle(
+            fontFamily: 'monospace',
+            fontSize: 10.0,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFFEDEDEA),
+            letterSpacing: 0.2,
+          ),
+        );
+        final textPainter = TextPainter(
+          text: textSpan,
+          textDirection: TextDirection.ltr,
+        )..layout();
+
+        final pillCenter = Offset(center.dx, center.dy + 18.0);
+        final pillRect = Rect.fromCenter(
+          center: pillCenter,
+          width: textPainter.width + 12.0,
+          height: textPainter.height + 6.0,
+        );
+        final rrect =
+            RRect.fromRectAndRadius(pillRect, const Radius.circular(4.0));
+
+        // Pill background
+        final pillBgPaint = Paint()
+          ..color = isDark ? const Color(0xFF141412) : palette.bgBase
+          ..style = PaintingStyle.fill;
+        canvas.drawRRect(rrect, pillBgPaint);
+
+        // Pill border
+        final pillBorderPaint = Paint()
+          ..color = isDark ? const Color(0xFF383832) : palette.div
+          ..strokeWidth = 1.0
+          ..style = PaintingStyle.stroke;
+        canvas.drawRRect(rrect, pillBorderPaint);
+
+        // Center text inside the pill
+        textPainter.paint(
+          canvas,
+          Offset(pillCenter.dx - textPainter.width / 2,
+              pillCenter.dy - textPainter.height / 2),
+        );
+      }
     }
   }
 
@@ -359,6 +363,10 @@ class _OntologyGraphPainter extends CustomPainter {
   bool shouldRepaint(covariant _OntologyGraphPainter oldDelegate) {
     return oldDelegate.hoveredNodeId != hoveredNodeId ||
         oldDelegate.palette != palette ||
-        oldDelegate.scale != scale;
+        oldDelegate.scale != scale ||
+        oldDelegate.offsetX != offsetX ||
+        oldDelegate.offsetY != offsetY ||
+        oldDelegate.nodes != nodes ||
+        oldDelegate.edges != edges;
   }
 }

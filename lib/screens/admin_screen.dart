@@ -299,12 +299,16 @@ class _AdminScreenState extends State<AdminScreen> {
                 color: widget.palette.accent,
                 shape: BoxShape.circle,
               ),
-              child: const Center(
-                child: Text('ND',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold)),
+              child: Center(
+                child: Text(
+                  widget.user.name.trim().isNotEmpty
+                      ? widget.user.name.trim().split(' ').map((s) => s.isNotEmpty ? s[0].toUpperCase() : '').take(2).join()
+                      : (widget.user.email.isNotEmpty ? widget.user.email[0].toUpperCase() : 'U'),
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold),
+                ),
               ),
             ),
             const SizedBox(width: 16),
@@ -312,14 +316,14 @@ class _AdminScreenState extends State<AdminScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.user.name.isNotEmpty ? widget.user.name : 'Naren D',
+                  widget.user.name.isNotEmpty ? widget.user.name : widget.user.email.split('@').first,
                   style: UnoTypography.body(
                       color: widget.palette.text,
                       fontSize: 15,
                       fontWeight: FontWeight.w600),
                 ),
                 Text(
-                  widget.user.org.isNotEmpty ? widget.user.org : 'Acme Corp',
+                  widget.user.org.isNotEmpty ? widget.user.org : 'Pilot Lead Workspace',
                   style: UnoTypography.mono(
                       color: widget.palette.textSec, fontSize: 11),
                 ),
@@ -328,11 +332,13 @@ class _AdminScreenState extends State<AdminScreen> {
           ],
         ),
         const SizedBox(height: 24),
-        _buildInfoField('FULL NAME', widget.user.name.isNotEmpty ? widget.user.name : 'Naren D'),
+        _buildInfoField('FULL NAME', widget.user.name.isNotEmpty ? widget.user.name : widget.user.email.split('@').first),
         const SizedBox(height: 14),
         _buildInfoField('WORK EMAIL', widget.user.email),
         const SizedBox(height: 14),
-        _buildInfoField('ORGANIZATION / TEAM', widget.user.org.isNotEmpty ? widget.user.org : 'Acme Corp'),
+        _buildInfoField('ORGANIZATION / TEAM', widget.user.org.isNotEmpty ? widget.user.org : 'Pilot Workspace (34b9ce85)'),
+        const SizedBox(height: 14),
+        _buildInfoField('ACTIVE BACKEND', 'http://10.0.0.59:8000'),
       ],
     );
   }
@@ -444,7 +450,7 @@ class _AdminScreenState extends State<AdminScreen> {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            color: widget.palette.bgSurface,
+            color: widget.palette.bgElevated,
             border: Border.all(color: widget.palette.div),
             borderRadius: BorderRadius.circular(8),
           ),

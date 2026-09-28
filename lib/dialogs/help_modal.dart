@@ -21,7 +21,7 @@ class HelpModal extends StatelessWidget {
           width: 520,
           margin: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: palette.bgElevated,
+            color: palette.bgSurface,
             border: Border.all(color: palette.div),
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
@@ -96,7 +96,7 @@ class HelpModal extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: palette.bgSurface,
+                        color: palette.bgElevated,
                         border: Border.all(color: palette.div),
                         borderRadius: BorderRadius.circular(14),
                       ),
@@ -164,7 +164,7 @@ class HelpModal extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: palette.bgSurface,
+                        color: palette.bgElevated,
                         border: Border.all(color: palette.div),
                         borderRadius: BorderRadius.circular(14),
                       ),
@@ -213,8 +213,8 @@ class HelpModal extends StatelessWidget {
                                     );
                                   },
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: palette.text,
-                                    foregroundColor: palette.bgBase,
+                                    backgroundColor: palette.accent,
+                                    foregroundColor: Colors.white,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(16),
                                     ),

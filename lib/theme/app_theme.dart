@@ -32,33 +32,35 @@ class UnoPalette {
 
   static const dark = UnoPalette(
     bgBase: Color(0xFF181816),
-    bgSurface: Color(0xFF21211E),
-    bgElevated: Color(0xFF2A2A26),
-    div: Color(0xFF33332E),
+    bgSurface: Color(0xFF20201D),
+    bgElevated: Color(0xFF282824),
+    div: Color(0xFF2E2E2A),
     accent: Color(0xFFDA7756),
     output: Color(0xFFE59866),
-    live: Color(0xFF52B788),
+    live: Color(0xFF22C55E),
     confirmed: Color(0xFFE07A5F),
     inferred: Color(0xFFDA7756),
     neutral: Color(0xFF68A090),
-    text: Color(0xFFF0EFEA),
-    textSec: Color(0xFFA3A199),
+    text: Color(0xFFEDEDEB),
+    textSec: Color(0xFF8E8D88),
   );
 
   static const light = UnoPalette(
-    bgBase: Color(0xFFFAF8F5),
-    bgSurface: Color(0xFFF3EFE6),
-    bgElevated: Color(0xFFFFFFFF),
-    div: Color(0xFFE6E5DF),
+    bgBase: Color(0xFFF7F6F3),
+    bgSurface: Color(0xFFFFFFFF),
+    bgElevated: Color(0xFFEFECE6),
+    div: Color(0xFFE8E5DF),
     accent: Color(0xFFDA7756),
     output: Color(0xFFC97A3E),
-    live: Color(0xFF3B9B85),
-    confirmed: Color(0xFFC05A6E),
-    inferred: Color(0xFFD96B43),
+    live: Color(0xFF22C55E),
+    confirmed: Color(0xFFDA7756),
+    inferred: Color(0xFFDA7756),
     neutral: Color(0xFF4A7C6E),
-    text: Color(0xFF1D1C1A),
+    text: Color(0xFF1C1917),
     textSec: Color(0xFF706E6B),
   );
+
+  bool get isDark => bgBase == const Color(0xFF181816);
 
   // Query tiers
   static const queryCold = Color(0xFF6EC8B8);

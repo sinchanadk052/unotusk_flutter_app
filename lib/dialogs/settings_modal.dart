@@ -66,7 +66,7 @@ class _SettingsModalState extends State<SettingsModal> {
           height: 540,
           margin: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: widget.palette.bgElevated,
+            color: widget.palette.bgSurface,
             border: Border.all(color: widget.palette.div),
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
@@ -167,7 +167,7 @@ class _SettingsModalState extends State<SettingsModal> {
                     // Right Content Pane
                     Expanded(
                       child: Container(
-                        color: widget.palette.bgElevated,
+                        color: widget.palette.bgSurface,
                         padding: const EdgeInsets.all(28),
                         child: SingleChildScrollView(
                           child: _buildTabContent(),
@@ -225,10 +225,12 @@ class _SettingsModalState extends State<SettingsModal> {
                 color: widget.palette.accent,
                 shape: BoxShape.circle,
               ),
-              child: const Center(
+              child: Center(
                 child: Text(
-                  'ND',
-                  style: TextStyle(
+                  widget.user.name.trim().isNotEmpty
+                      ? widget.user.name.trim().split(' ').map((s) => s.isNotEmpty ? s[0].toUpperCase() : '').take(2).join()
+                      : (widget.user.email.isNotEmpty ? widget.user.email[0].toUpperCase() : 'U'),
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
@@ -241,7 +243,7 @@ class _SettingsModalState extends State<SettingsModal> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.user.name.isNotEmpty ? widget.user.name : 'Naren D',
+                  widget.user.name.isNotEmpty ? widget.user.name : widget.user.email.split('@').first,
                   style: UnoTypography.body(
                     color: widget.palette.text,
                     fontSize: 14,
@@ -283,12 +285,14 @@ class _SettingsModalState extends State<SettingsModal> {
         ),
         const SizedBox(height: 24),
         _buildTextField('Full Name',
-            widget.user.name.isNotEmpty ? widget.user.name : 'Naren D'),
+            widget.user.name.isNotEmpty ? widget.user.name : widget.user.email.split('@').first),
         const SizedBox(height: 14),
         _buildTextField('Email Address',
-            widget.user.email.isNotEmpty ? widget.user.email : 'naren@unotusk.com'),
+            widget.user.email.isNotEmpty ? widget.user.email : 'lead@acme.com'),
         const SizedBox(height: 14),
-        _buildTextField('Role in Workspace', widget.user.role),
+        _buildTextField('Role in Workspace', widget.user.role.isNotEmpty ? widget.user.role : 'Pilot Admin'),
+        const SizedBox(height: 14),
+        _buildTextField('Connected Backend', 'http://10.0.0.59:8000'),
       ],
     );
   }
@@ -667,7 +671,7 @@ class _SettingsModalState extends State<SettingsModal> {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
           decoration: BoxDecoration(
-            color: widget.palette.bgSurface,
+            color: widget.palette.bgElevated,
             border: Border.all(color: widget.palette.div),
             borderRadius: BorderRadius.circular(10),
           ),

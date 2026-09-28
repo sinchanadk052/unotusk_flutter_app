@@ -29,7 +29,7 @@ class UnotuskApp extends StatefulWidget {
 }
 
 class _UnotuskAppState extends State<UnotuskApp> {
-  bool _isDark = false;
+  bool _isDark = true;
 
   void _toggleTheme() {
     setState(() {
@@ -83,13 +83,14 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   // Navigation stages: auth → oidc → projects → workspace
-  String _appStage = 'auth'; // 'auth', 'oidc', 'projects', 'workspace'
+  String _appStage = 'auth';
   UserModel _user = const UserModel(
-    name: 'Tech Lead',
-    org: 'Acme Corp',
-    email: 'lead@acme.com',
-    role: 'Admin / Pilot Lead',
+    name: 'Developer',
+    org: 'Acme Corporation',
+    email: '',
+    role: 'Developer',
   );
+  ProjectItem? _openedProject;
   String _openedProjectName = '';
 
   bool _sidebarOpen = true;
@@ -114,11 +115,7 @@ class _AppShellState extends State<AppShell> {
   }
 
   void _loadInitialTelemetry() async {
-    ApiService.checkHealth();
-    final notifs = await ApiService.fetchNotifications();
-    if (mounted) {
-      setState(() => _notifications = notifs);
-    }
+    await ApiService.checkHealth();
   }
 
   @override
@@ -134,25 +131,39 @@ class _AppShellState extends State<AppShell> {
     _generationTimers.clear();
   }
 
-  void _handleAuthenticated(String name, String org) {
+  void _handleAuthenticated(UserModel user) async {
     setState(() {
-      _user = UserModel(
-        name: name,
-        org: org,
-        role: name.contains('Lead') || name.contains('Admin')
-            ? 'Admin / Pilot Lead'
-            : 'Member / Developer',
-        email: name.contains('Lead') ? 'lead@acme.com' : 'dev1@acme.com',
-      );
+      _user = user;
       _appStage = 'projects';
     });
+    try {
+      final notifs = await ApiService.fetchNotifications();
+      if (mounted) {
+        setState(() => _notifications = notifs);
+      }
+    } catch (_) {}
   }
 
-  void _handleOpenProject(String projectName) {
+  void _handleOpenProject(ProjectItem project) {
     setState(() {
-      _openedProjectName = projectName;
+      _openedProject = project;
+      _openedProjectName = project.name;
+      _messages.clear();
+      _isGenerating = false;
+      _activeView = 'chat';
       _appStage = 'workspace';
     });
+    ApiService.setActiveProject(project);
+    _loadProjectInitialChat(project);
+  }
+
+  void _loadProjectInitialChat(ProjectItem project) async {
+    try {
+      final chats = await ApiService.fetchRecentChats(projectId: project.id);
+      if (chats.isNotEmpty && mounted) {
+        _loadRecentChat(chats.first.id);
+      }
+    } catch (_) {}
   }
 
   void _handleBackToProjects() {
@@ -167,8 +178,17 @@ class _AppShellState extends State<AppShell> {
 
   void _handleLogOut() {
     _clearTimers();
+    ApiService.logout();
     setState(() {
       _messages.clear();
+      _openedProject = null;
+      _openedProjectName = '';
+      _user = const UserModel(
+        name: 'Developer',
+        org: 'Acme Corporation',
+        email: '',
+        role: 'Developer',
+      );
       _appStage = 'auth';
     });
   }
@@ -182,17 +202,11 @@ class _AppShellState extends State<AppShell> {
     });
   }
 
-  void _handleSubmitQuery(String text) {
+  void _handleSubmitQuery(String text) async {
     if (text.trim().isEmpty || _isGenerating) return;
 
     final queryId = 'q-${DateTime.now().millisecondsSinceEpoch}';
     final genId = 'g-${DateTime.now().millisecondsSinceEpoch + 1}';
-
-    final serverAnswerFuture = ApiService.askQuestion(
-      projectName:
-          _openedProjectName.isNotEmpty ? _openedProjectName : 'Default',
-      question: text.trim(),
-    );
 
     setState(() {
       _isGenerating = true;
@@ -208,64 +222,13 @@ class _AppShellState extends State<AppShell> {
       ));
     });
 
-    _clearTimers();
-
-    // Phase 1 -> Scoring at 1600ms
-    _generationTimers.add(Timer(const Duration(milliseconds: 1600), () {
-      if (!mounted) return;
-      setState(() {
-        final idx = _messages.indexWhere((m) => m.id == genId);
-        if (idx != -1) {
-          _messages[idx] = _messages[idx].copyWith(phase: 'scoring');
-        }
-      });
-    }));
-
-    // Phase 2 -> DeepScoring at 3200ms
-    _generationTimers.add(Timer(const Duration(milliseconds: 3200), () {
-      if (!mounted) return;
-      setState(() {
-        final idx = _messages.indexWhere((m) => m.id == genId);
-        if (idx != -1) {
-          _messages[idx] = _messages[idx].copyWith(phase: 'deepScoring');
-        }
-      });
-    }));
-
-    // Phase 3 -> Response at 4600ms
-    _generationTimers.add(Timer(const Duration(milliseconds: 4600), () async {
-      if (!mounted) return;
-      String liveAnswer;
-      try {
-        liveAnswer = await serverAnswerFuture;
-      } catch (e) {
-        liveAnswer =
-            'Verified response from server at ${ApiService.baseUrl} for "${text.trim()}".';
-      }
-
-      final finalResponse = QueryResponseData(
-        segments: [
-          ResponseSegment(text: liveAnswer, tag: 'CONFIRMED'),
-        ],
-        meta: 'Grounding verified via 10.0.0.59:8000 · 3 sources · 18ms',
-        queryType: 'hot',
-        confidence: 'confirmed',
-        reasoning: const ReasoningModel(
-          compositeScore: 0.94,
-          components: [
-            ScoreComponent(label: 'AST Symbols', score: 0.96),
-            ScoreComponent(label: 'Schema Defs', score: 0.93),
-            ScoreComponent(label: 'LAN Topology', score: 0.95),
-          ],
-          routingPath: ['LAN Gateway', 'FastAPI :8000', 'Vector Store'],
-          ontologyEdges: [
-            'SyncGuard -> Core API',
-            'Core API -> Postgres (5432)'
-          ],
-          citations: ['LAN_PILOT_RUNBOOK.md', 'LAN_PILOT_MATRIX.md'],
-        ),
+    try {
+      final responseData = await ApiService.askQuestionDetailed(
+        projectId: _openedProject?.id,
+        question: text.trim(),
       );
 
+      if (!mounted) return;
       setState(() {
         _isGenerating = false;
         final idx = _messages.indexWhere((m) => m.id == genId);
@@ -273,55 +236,79 @@ class _AppShellState extends State<AppShell> {
           _messages[idx] = ChatMessage(
             id: genId,
             kind: MessageKind.response,
-            data: finalResponse,
+            data: responseData,
           );
         }
       });
-    }));
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isGenerating = false;
+        final idx = _messages.indexWhere((m) => m.id == genId);
+        if (idx != -1) {
+          _messages[idx] = ChatMessage(
+            id: genId,
+            kind: MessageKind.response,
+            data: QueryResponseData(
+              segments: [
+                ResponseSegment(
+                  text: 'Server Response (http://10.0.0.59:8000):\n$e',
+                  tag: 'NOTICE',
+                ),
+              ],
+              meta: 'http://10.0.0.59:8000 · verified response',
+              queryType: 'hot',
+              confidence: 'insufficient',
+            ),
+          );
+        }
+      });
+    }
   }
 
-    void _loadRecentChat(int id) async {
-    final chats = await ApiService.fetchRecentChats();
-    final recent = chats.firstWhere(
-      (c) => c.id == id,
-      orElse: () => chats.isNotEmpty
-          ? chats.first
-          : const RecentChat(
-              id: 1,
-              title: 'Project architecture & dependency map',
-              ago: 'Just now',
-              time: '10:00 AM',
-            ),
-    );
-
-    final response = QueryResponseData(
-      segments: [
-        ResponseSegment(
-          text:
-              'Retrieved architectural groundings for "${recent.title}" from server at ${ApiService.baseUrl}.',
-          tag: 'CONFIRMED',
-        ),
-      ],
-      meta: 'Server Grounding · http://10.0.0.59:8000 · verified',
-      queryType: 'hot',
-      confidence: 'confirmed',
-    );
-
+  void _loadRecentChat(dynamic id) async {
+    final convId = id.toString();
     _clearTimers();
     setState(() {
-      _isGenerating = false;
+      _isGenerating = true;
       _messages.clear();
+      _activeView = 'chat';
+    });
+
+    try {
+      final msgs = await ApiService.fetchConversationMessages(
+        convId,
+        projectId: _openedProject?.id,
+      );
+      if (!mounted) return;
+      if (msgs.isNotEmpty) {
+        setState(() {
+          _isGenerating = false;
+          _messages.addAll(msgs);
+        });
+        return;
+      }
+    } catch (_) {}
+
+    final chats = await ApiService.fetchRecentChats(projectId: _openedProject?.id);
+    final recent = chats.firstWhere(
+      (c) => c.id.toString() == convId,
+      orElse: () => RecentChat(
+        id: convId,
+        title: 'Grounded Conversation Thread',
+        ago: 'Just now',
+        time: 'Active',
+      ),
+    );
+
+    if (!mounted) return;
+    setState(() {
+      _isGenerating = false;
       _messages.add(ChatMessage(
-        id: 'q-recent-$id',
+        id: 'q-$convId',
         kind: MessageKind.query,
         text: recent.title,
       ));
-      _messages.add(ChatMessage(
-        id: 'r-recent-$id',
-        kind: MessageKind.response,
-        data: response,
-      ));
-      _activeView = 'chat';
     });
   }
 
@@ -381,8 +368,12 @@ class _AppShellState extends State<AppShell> {
                   palette: palette,
                   activeView: _activeView,
                   onViewChange: (v) => setState(() {
-                    _activeView = v;
-                    _notificationsOpen = false;
+                    if (v == 'projects') {
+                      _handleBackToProjects();
+                    } else {
+                      _activeView = v;
+                      _notificationsOpen = false;
+                    }
                   }),
                   onLoadRecentChat: _loadRecentChat,
                   user: _user,
@@ -411,6 +402,9 @@ class _AppShellState extends State<AppShell> {
                               onToggleSidebar: () =>
                                   setState(() => _sidebarOpen = !_sidebarOpen),
                               projectName: _openedProjectName,
+                              repoFullName:
+                                  'Kushall-07/${_openedProjectName.isNotEmpty ? _openedProjectName : "SyncGuard"}',
+                              branchName: 'main',
                               onBackToProjects: _handleBackToProjects,
                             ),
 
@@ -436,6 +430,9 @@ class _AppShellState extends State<AppShell> {
                             onToggleSidebar: () =>
                                 setState(() => _sidebarOpen = !_sidebarOpen),
                             projectName: _openedProjectName,
+                            repoFullName:
+                                'Kushall-07/${_openedProjectName.isNotEmpty ? _openedProjectName : "SyncGuard"}',
+                            branchName: 'main',
                             onBackToProjects: _handleBackToProjects,
                           ),
 
@@ -471,9 +468,13 @@ class _AppShellState extends State<AppShell> {
                 palette: palette,
                 activeView: _activeView,
                 onViewChange: (v) => setState(() {
-                  _activeView = v;
                   _sidebarOpen = false;
-                  _notificationsOpen = false;
+                  if (v == 'projects') {
+                    _handleBackToProjects();
+                  } else {
+                    _activeView = v;
+                    _notificationsOpen = false;
+                  }
                 }),
                 onLoadRecentChat: (id) {
                   setState(() => _sidebarOpen = false);

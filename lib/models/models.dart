@@ -5,12 +5,14 @@ class UserModel {
   final String org;
   final String email;
   final String role;
+  final String? id;
 
   const UserModel({
     required this.name,
     required this.org,
-    this.email = 'naren@unotusk.com',
-    this.role = 'Staff Engineer / Tech Lead',
+    this.email = 'lead@acme.com',
+    this.role = 'Admin / Pilot Lead',
+    this.id,
   });
 }
 
@@ -35,11 +37,14 @@ class NotificationItem {
 class ProjectItem {
   final String id;
   final String name;
-  final String upsStatus; // active, offline
-  final String ingestionStatus; // live, stale, ingesting
+  final String upsStatus; // active, offline, READY, CREATED
+  final String ingestionStatus; // live, stale, ingesting, ready
   final String lastIngestion;
   final double fpr;
   final int days;
+  final String? organizationId;
+  final String? slug;
+  final String? description;
 
   const ProjectItem({
     required this.id,
@@ -49,6 +54,9 @@ class ProjectItem {
     required this.lastIngestion,
     required this.fpr,
     required this.days,
+    this.organizationId,
+    this.slug,
+    this.description,
   });
 }
 
@@ -69,21 +77,29 @@ class ActivityItem {
 }
 
 class RecentChat {
-  final int id;
-  final String title;
+  final dynamic id;
+  String title;
   final String ago;
   final String time;
+  final int messageCount;
+  bool isPinned;
+  String? projectId;
 
-  const RecentChat({
+  RecentChat({
     required this.id,
     required this.title,
     required this.ago,
     required this.time,
+    this.messageCount = 0,
+    this.isPinned = false,
+    this.projectId,
   });
+
+  String get idString => id.toString();
 }
 
 class ArchivedChat {
-  final int id;
+  final dynamic id;
   final String title;
   final String date;
   final int messages;
@@ -94,6 +110,37 @@ class ArchivedChat {
     required this.date,
     required this.messages,
   });
+
+  String get idString => id.toString();
+}
+
+class EvidenceItem {
+  final String type;
+  final String file;
+  final String? lines;
+  final double relevance;
+  final String? snippet;
+  final String? symbol;
+
+  const EvidenceItem({
+    required this.type,
+    required this.file,
+    this.lines,
+    required this.relevance,
+    this.snippet,
+    this.symbol,
+  });
+
+  factory EvidenceItem.fromJson(Map<String, dynamic> json) {
+    return EvidenceItem(
+      type: json['type']?.toString() ?? 'symbol',
+      file: json['file']?.toString() ?? '',
+      lines: json['lines']?.toString(),
+      relevance: (json['relevance'] as num?)?.toDouble() ?? 1.0,
+      snippet: json['snippet']?.toString(),
+      symbol: json['symbol']?.toString(),
+    );
+  }
 }
 
 class SpecHistoryItem {
@@ -102,11 +149,17 @@ class SpecHistoryItem {
   final String timestamp;
   final String ago;
   final String isoDate;
-  final String queryType; // cold, warm, hot
-  final String confidence; // confirmed, uncertain, insufficient
+  final String queryType; // cold, warm, hot, COUPLING, etc.
+  final String confidence; // confirmed, uncertain, insufficient, HIGH, etc.
   final double score;
   final double? fprDelta;
   final bool hasBDD;
+  final String? category;
+  final String? description;
+  final String? whyItMatters;
+  final String? recommendation;
+  final String? severity;
+  final List<EvidenceItem> evidence;
 
   const SpecHistoryItem({
     required this.id,
@@ -119,6 +172,12 @@ class SpecHistoryItem {
     required this.score,
     this.fprDelta,
     required this.hasBDD,
+    this.category,
+    this.description,
+    this.whyItMatters,
+    this.recommendation,
+    this.severity,
+    this.evidence = const [],
   });
 }
 
@@ -147,6 +206,8 @@ class ReasoningModel {
   final List<String> routingPath;
   final List<String> ontologyEdges;
   final List<String> citations;
+  final List<EvidenceItem> evidence;
+  final Map<String, dynamic>? debugSignals;
 
   const ReasoningModel({
     required this.compositeScore,
@@ -154,6 +215,8 @@ class ReasoningModel {
     required this.routingPath,
     required this.ontologyEdges,
     required this.citations,
+    this.evidence = const [],
+    this.debugSignals,
   });
 }
 
@@ -250,7 +313,8 @@ class OntologyNode {
   final double cx;
   final double cy;
   final String label;
-  final String type; // Service, Decision, Commit, Ticket, Thread, Person
+  final String type; // Service, Decision, Commit, Ticket, Thread, Person, Symbol, File, Dependency
+  final String? subtitle;
 
   const OntologyNode({
     required this.id,
@@ -258,6 +322,7 @@ class OntologyNode {
     required this.cy,
     required this.label,
     required this.type,
+    this.subtitle,
   });
 }
 

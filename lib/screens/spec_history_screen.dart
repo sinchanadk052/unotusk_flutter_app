@@ -79,7 +79,7 @@ class _SpecHistoryScreenState extends State<SpecHistoryScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Unotusk Core API · 67 days indexed',
+                    '${_specHistory.length} live architecture findings & reports indexed',
                     style: UnoTypography.body(
                       color: widget.palette.textSec,
                       fontSize: 13,
@@ -133,9 +133,9 @@ class _SpecHistoryScreenState extends State<SpecHistoryScreen> {
                         onPressed: () async {
                           final picked = await showDatePicker(
                             context: context,
-                            initialDate: _selectedDate ?? DateTime(2026, 7, 22),
-                            firstDate: DateTime(2026, 1, 1),
-                            lastDate: DateTime(2026, 12, 31),
+                            initialDate: _selectedDate ?? DateTime.now(),
+                            firstDate: DateTime(2020, 1, 1),
+                            lastDate: DateTime(2030, 12, 31),
                             builder: (context, child) {
                               return Theme(
                                 data: ThemeData(
@@ -175,7 +175,7 @@ class _SpecHistoryScreenState extends State<SpecHistoryScreen> {
                                 : widget.palette.div,
                           ),
                           backgroundColor: _selectedDate != null
-                              ? widget.palette.accent.withValues(alpha: 0.12)
+                                ? widget.palette.accent.withValues(alpha: 0.12)
                               : Colors.transparent,
                           padding: const EdgeInsets.symmetric(
                               horizontal: 14, vertical: 12),
@@ -196,60 +196,61 @@ class _SpecHistoryScreenState extends State<SpecHistoryScreen> {
                   const SizedBox(height: 20),
 
                   // Similar Spec Notice Card
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: widget.palette.accent.withValues(alpha: 0.10),
-                      border: Border.all(
-                          color: widget.palette.accent.withValues(alpha: 0.3)),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(LucideIcons.trendingUp,
-                            size: 14, color: widget.palette.accent),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: RichText(
-                            text: TextSpan(
-                              style: UnoTypography.body(
-                                  color: widget.palette.textSec, fontSize: 12),
-                              children: [
-                                TextSpan(
-                                  text: 'Similar spec available',
-                                  style: TextStyle(
-                                    color: widget.palette.accent,
-                                    fontWeight: FontWeight.w600,
+                  if (_specHistory.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: widget.palette.accent.withValues(alpha: 0.10),
+                        border: Border.all(
+                            color: widget.palette.accent.withValues(alpha: 0.3)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(LucideIcons.trendingUp,
+                              size: 14, color: widget.palette.accent),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: RichText(
+                              text: TextSpan(
+                                style: UnoTypography.body(
+                                    color: widget.palette.textSec, fontSize: 12),
+                                children: [
+                                  TextSpan(
+                                    text: 'Active Finding Highlight',
+                                    style: TextStyle(
+                                      color: widget.palette.accent,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
-                                ),
-                                const TextSpan(
-                                  text:
-                                      ' — OIDC federation contract (Jul 3) matches 4 ontology edges with the rate-limiter spec.',
-                                ),
-                              ],
+                                  TextSpan(
+                                    text:
+                                        ' — ${_specHistory.first.query} [${_specHistory.first.category?.toUpperCase() ?? 'FINDING'}] (${_specHistory.first.severity ?? 'active'}).',
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            if (_specHistory.isNotEmpty) {
-                              setState(() => _activeSpecDrawer = _specHistory.first);
-                            }
-                          },
-                          child: Text(
-                            'VIEW →',
-                            style: UnoTypography.mono(
-                              color: widget.palette.accent,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.6,
+                          TextButton(
+                            onPressed: () {
+                              if (_specHistory.isNotEmpty) {
+                                setState(() => _activeSpecDrawer = _specHistory.first);
+                              }
+                            },
+                            child: Text(
+                              'VIEW →',
+                              style: UnoTypography.mono(
+                                color: widget.palette.accent,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.6,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
                   const SizedBox(height: 20),
 
                   // Specs List

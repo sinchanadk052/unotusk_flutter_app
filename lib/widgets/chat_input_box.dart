@@ -463,8 +463,8 @@ class _ChatInputBoxState extends State<ChatInputBox> {
                             ),
                             child: Center(
                               child: Icon(
-                                LucideIcons.send,
-                                size: 13,
+                                LucideIcons.arrowUp,
+                                size: 14,
                                 color: canSubmit
                                     ? Colors.white
                                     : widget.palette.textSec,

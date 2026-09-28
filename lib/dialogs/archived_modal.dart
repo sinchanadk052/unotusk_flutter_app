@@ -7,7 +7,7 @@ import '../theme/app_theme.dart';
 class ArchivedModal extends StatefulWidget {
   final UnoPalette palette;
   final VoidCallback onClose;
-  final Function(int)? onSelectChat;
+  final Function(dynamic)? onSelectChat;
 
   const ArchivedModal({
     super.key,
@@ -51,7 +51,7 @@ class _ArchivedModalState extends State<ArchivedModal> {
           constraints: const BoxConstraints(maxHeight: 580),
           margin: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: widget.palette.bgElevated,
+            color: widget.palette.bgSurface,
             border: Border.all(color: widget.palette.div),
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
@@ -106,7 +106,7 @@ class _ArchivedModalState extends State<ArchivedModal> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
-                    color: widget.palette.bgSurface,
+                    color: widget.palette.bgElevated,
                     border: Border.all(color: widget.palette.div),
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -173,7 +173,7 @@ class _ArchivedModalState extends State<ArchivedModal> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 14, vertical: 12),
                             decoration: BoxDecoration(
-                              color: widget.palette.bgSurface,
+                              color: widget.palette.bgElevated,
                               border: Border.all(color: widget.palette.div),
                               borderRadius: BorderRadius.circular(12),
                             ),

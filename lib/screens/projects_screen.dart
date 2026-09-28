@@ -1,14 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import '../models/models.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
-
-/// Project model for the dashboard.
-class _Project {
-  final String name;
-  final String status;
-
-  const _Project({required this.name, this.status = 'READY'});
-}
+import '../widgets/unotusk_logo.dart';
 
 /// Projects dashboard screen with top nav bar and project list.
 /// Matches the reference design: Unotusk logo, Projects/Settings tabs,
@@ -18,7 +13,7 @@ class ProjectsScreen extends StatefulWidget {
   final bool isDark;
   final VoidCallback onToggleTheme;
   final String userName;
-  final void Function(String projectName) onOpenProject;
+  final void Function(ProjectItem project) onOpenProject;
   final VoidCallback onLogOut;
 
   const ProjectsScreen({
@@ -40,22 +35,30 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
   String _filterText = '';
   bool _userMenuOpen = false;
   bool _connectDialogOpen = false;
+  bool _isServerConnected = false;
+  Timer? _serverTimer;
 
-  // Connect Codebase form controllers
-  final _repoUrlController = TextEditingController();
-  final _projectNameController = TextEditingController();
-  final _branchController = TextEditingController(text: 'main');
-  final _slugController = TextEditingController();
-  final _descriptionController = TextEditingController();
+  // Connect Server form controller
+  final _serverUrlController = TextEditingController();
 
-  final List<_Project> _projects = [];
+  final List<ProjectItem> _projects = [];
   bool _isLoadingProjects = true;
   String? _projectsError;
 
   @override
   void initState() {
     super.initState();
+    _checkServer();
     _fetchServerProjects();
+    _serverTimer =
+        Timer.periodic(const Duration(seconds: 4), (_) => _checkServer());
+  }
+
+  void _checkServer() async {
+    final ok = await ApiService.checkHealth();
+    if (mounted) {
+      setState(() => _isServerConnected = ok);
+    }
   }
 
   void _fetchServerProjects() async {
@@ -70,12 +73,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
       setState(() {
         _isLoadingProjects = false;
         _projects.clear();
-        for (final p in serverProjects) {
-          _projects.add(_Project(
-            name: p.name,
-            status: p.upsStatus.toUpperCase(),
-          ));
-        }
+        _projects.addAll(serverProjects);
         if (serverProjects.isEmpty && ApiService.lastError != null) {
           _projectsError = ApiService.lastError;
         }
@@ -90,7 +88,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
     }
   }
 
-  List<_Project> get _filteredProjects {
+  List<ProjectItem> get _filteredProjects {
     if (_filterText.isEmpty) return _projects;
     return _projects
         .where((p) => p.name.toLowerCase().contains(_filterText.toLowerCase()))
@@ -121,6 +119,16 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
             ],
           ),
 
+          // Dismiss user menu when tapping outside
+          if (_userMenuOpen)
+            Positioned.fill(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => setState(() => _userMenuOpen = false),
+                child: const SizedBox.expand(),
+              ),
+            ),
+
           // User Menu Dropdown Overlay
           if (_userMenuOpen)
             _buildUserMenuDropdown(palette),
@@ -135,48 +143,37 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
 
   @override
   void dispose() {
-    _repoUrlController.dispose();
-    _projectNameController.dispose();
-    _branchController.dispose();
-    _slugController.dispose();
-    _descriptionController.dispose();
+    _serverTimer?.cancel();
+    _serverUrlController.dispose();
     super.dispose();
   }
 
   void _openConnectDialog() {
-    _repoUrlController.clear();
-    _projectNameController.clear();
-    _branchController.text = 'main';
-    _slugController.clear();
-    _descriptionController.clear();
+    _serverUrlController.text = ApiService.baseUrl;
     setState(() => _connectDialogOpen = true);
   }
 
-  void _handleConnectAndIngest() async {
-    final name = _projectNameController.text.trim();
-    final repoUrl = _repoUrlController.text.trim();
-    final branch = _branchController.text.trim();
-    if (name.isEmpty) return;
+  void _handleConnectServer() async {
+    final url = _serverUrlController.text.trim();
+    if (url.isEmpty) return;
+
+    // Normalise: ensure it starts with http(s)://
+    final normalised = url.startsWith('http') ? url : 'http://$url';
+    // Strip trailing slash
+    ApiService.baseUrl = normalised.endsWith('/') ? normalised.substring(0, normalised.length - 1) : normalised;
 
     setState(() {
-      _projects.insert(0, _Project(name: name, status: 'INGESTING'));
       _connectDialogOpen = false;
+      _isLoadingProjects = true;
+      _projectsError = null;
     });
 
-    try {
-      await ApiService.createProject(
-        name: name,
-        repoUrl: repoUrl,
-        branch: branch.isNotEmpty ? branch : 'main',
-        slug: _slugController.text.trim(),
-        description: _descriptionController.text.trim(),
-      );
-      _fetchServerProjects();
-    } catch (_) {}
+    _checkServer();
+    _fetchServerProjects();
   }
 
   // ─────────────────────────────────────────────────
-  //  Connect Codebase Dialog
+  //  Connect Server Dialog
   // ─────────────────────────────────────────────────
   Widget _buildConnectCodebaseDialog(UnoPalette palette) {
     return GestureDetector(
@@ -190,7 +187,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
               width: 420,
               padding: const EdgeInsets.all(28),
               decoration: BoxDecoration(
-                color: palette.bgBase,
+                color: palette.bgSurface,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: palette.div),
                 boxShadow: [
@@ -210,7 +207,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Connect Codebase',
+                        'Connect Server',
                         style: UnoTypography.body(
                           color: palette.text,
                           fontSize: 18,
@@ -231,7 +228,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Link a software repository to start grounding project intelligence.',
+                    'Paste the backend server URL to connect.',
                     style: UnoTypography.body(
                       color: palette.textSec,
                       fontSize: 13,
@@ -240,78 +237,13 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
 
                   const SizedBox(height: 22),
 
-                  // ── Repository URL ──
-                  _buildFieldLabel('Repository URL', palette),
+                  // ── Server URL ──
+                  _buildFieldLabel('Server URL', palette),
                   const SizedBox(height: 6),
                   _buildInputField(
-                    controller: _repoUrlController,
-                    hint: 'https://github.com/owner/repository',
-                    icon: Icons.link,
-                    palette: palette,
-                  ),
-
-                  const SizedBox(height: 18),
-
-                  // ── Project Name + Branch (side by side) ──
-                  Row(
-                    children: [
-                      Expanded(
-                        flex: 3,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildFieldLabel('Project Name', palette),
-                            const SizedBox(height: 6),
-                            _buildInputField(
-                              controller: _projectNameController,
-                              hint: 'Requests',
-                              icon: Icons.folder_outlined,
-                              palette: palette,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        flex: 2,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildFieldLabel('Branch', palette),
-                            const SizedBox(height: 6),
-                            _buildInputField(
-                              controller: _branchController,
-                              hint: 'main',
-                              icon: Icons.fork_right,
-                              palette: palette,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 18),
-
-                  // ── Project Slug ──
-                  _buildFieldLabel('Project Slug', palette),
-                  const SizedBox(height: 6),
-                  _buildInputField(
-                    controller: _slugController,
-                    hint: 'requests',
-                    icon: Icons.tag,
-                    palette: palette,
-                  ),
-
-                  const SizedBox(height: 18),
-
-                  // ── Description (Optional) ──
-                  _buildFieldLabel('Description (Optional)', palette),
-                  const SizedBox(height: 6),
-                  _buildInputField(
-                    controller: _descriptionController,
-                    hint: 'Python HTTP for humans',
-                    icon: Icons.notes,
+                    controller: _serverUrlController,
+                    hint: 'http://10.0.0.59:8000',
+                    icon: Icons.dns_outlined,
                     palette: palette,
                   ),
 
@@ -346,9 +278,9 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
 
                       const SizedBox(width: 10),
 
-                      // Connect & Ingest
+                      // Connect
                       InkWell(
-                        onTap: _handleConnectAndIngest,
+                        onTap: _handleConnectServer,
                         borderRadius: BorderRadius.circular(8),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
@@ -358,7 +290,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            'Connect & Ingest',
+                            'Connect',
                             style: UnoTypography.body(
                               color: Colors.white,
                               fontSize: 13,
@@ -398,7 +330,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
     return Container(
       height: 44,
       decoration: BoxDecoration(
-        color: palette.bgSurface,
+        color: palette.bgElevated,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: palette.div),
       ),
@@ -448,23 +380,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
       child: Row(
         children: [
           // ── Logo ──
-          Container(
-            width: 24,
-            height: 24,
-            decoration: BoxDecoration(
-              color: palette.accent,
-              borderRadius: BorderRadius.circular(4),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              'U',
-              style: UnoTypography.body(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
+          UnotuskLogo(size: 24, onDark: palette.isDark),
           const SizedBox(width: 10),
           Text(
             'Unotusk',
@@ -478,41 +394,49 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
 
           // ── Tab: Projects ──
           _buildTabButton('Projects', Icons.folder_outlined, 'projects', palette),
-          const SizedBox(width: 4),
-          // ── Tab: Settings ──
-          _buildTabButton('Settings', Icons.settings_outlined, 'settings', palette),
 
           const Spacer(),
 
           // ── Connected Badge ──
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-            decoration: BoxDecoration(
-              border: Border.all(color: palette.live.withValues(alpha: 0.4)),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 7,
-                  height: 7,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: palette.live,
-                  ),
+          Builder(
+            builder: (context) {
+              final isOnline = _isServerConnected || ApiService.isConnected;
+              final statusColor =
+                  isOnline ? palette.live : const Color(0xFFE05A5A);
+              final statusText = isOnline ? 'Connected' : 'Offline';
+
+              return Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                decoration: BoxDecoration(
+                  border:
+                      Border.all(color: statusColor.withValues(alpha: 0.4)),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                const SizedBox(width: 6),
-                Text(
-                  'Connected (10.0.0.59:8000)',
-                  style: UnoTypography.body(
-                    color: palette.live,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 7,
+                      height: 7,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: statusColor,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      statusText,
+                      style: UnoTypography.body(
+                        color: statusColor,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              );
+            },
           ),
 
           const SizedBox(width: 12),
@@ -671,7 +595,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                   const SizedBox(width: 10),
                   _buildActionButton(
                     icon: Icons.add,
-                    label: 'Connect Codebase',
+                    label: 'Connect Server',
                     palette: palette,
                     filled: true,
                     onTap: _openConnectDialog,
@@ -705,7 +629,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                   color: palette.textSec,
                 ),
                 filled: true,
-                fillColor: palette.bgSurface,
+                fillColor: palette.bgElevated,
                 contentPadding: const EdgeInsets.symmetric(vertical: 0),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -784,7 +708,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                   Text(
                     _projectsError != null
                         ? 'Could not connect to http://10.0.0.59:8000.\nPlease verify the server is running.'
-                        : 'Connect a codebase using the button above to start your first project.',
+                        : 'Connect a server using the button above to get started.',
                     textAlign: TextAlign.center,
                     style: UnoTypography.body(
                       color: palette.textSec,
@@ -855,14 +779,22 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
     );
   }
 
-  Widget _buildProjectCard(_Project project, UnoPalette palette) {
+  Widget _buildProjectCard(ProjectItem project, UnoPalette palette) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 2),
+      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
         color: palette.bgSurface,
-        border: Border.all(color: palette.div.withValues(alpha: 0.5)),
-        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: palette.div),
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          if (!palette.isDark)
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+        ],
       ),
       child: Row(
         children: [
@@ -871,7 +803,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: palette.bgBase,
+              color: palette.bgElevated,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: palette.div),
             ),
@@ -888,32 +820,55 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
 
           const SizedBox(width: 14),
 
-          // Project name
-          Text(
-            project.name,
-            style: UnoTypography.body(
-              color: palette.text,
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-            ),
+          // Project name & details
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                project.name,
+                style: UnoTypography.body(
+                  color: palette.text,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              if (project.description != null && project.description!.isNotEmpty) ...[
+                const SizedBox(height: 2),
+                Text(
+                  project.description!,
+                  style: UnoTypography.mono(
+                    color: palette.textSec,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ],
           ),
 
           const SizedBox(width: 12),
 
           // Status badge
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(
-              color: palette.live.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(10),
+              color: palette.isDark
+                  ? const Color(0xFF14241B)
+                  : palette.live.withValues(alpha: 0.12),
+              border: Border.all(
+                color: palette.isDark
+                    ? const Color(0xFF1C3B28)
+                    : palette.live.withValues(alpha: 0.3),
+              ),
+              borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
-              project.status,
+              project.upsStatus.toUpperCase(),
               style: UnoTypography.mono(
                 color: palette.live,
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
-                letterSpacing: 1.0,
+                letterSpacing: 0.8,
               ),
             ),
           ),
@@ -922,7 +877,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
 
           // Open button
           InkWell(
-            onTap: () => widget.onOpenProject(project.name),
+            onTap: () => widget.onOpenProject(project),
             borderRadius: BorderRadius.circular(6),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -953,26 +908,26 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
   }
 
   // ─────────────────────────────────────────────────
-  //  User Menu Dropdown
+  //  User Menu Dropdown (Matches Developer 1 Menu)
   // ─────────────────────────────────────────────────
   Widget _buildUserMenuDropdown(UnoPalette palette) {
     return Positioned(
-      top: 54,
+      top: 50,
       right: 16,
       child: GestureDetector(
         onTap: () {}, // Prevent closing when tapping inside
         child: Container(
-          width: 280,
-          padding: const EdgeInsets.all(16),
+          width: 210,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
           decoration: BoxDecoration(
             color: palette.bgSurface,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(10),
             border: Border.all(color: palette.div),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.3),
+                color: Colors.black.withValues(alpha: 0.35),
                 blurRadius: 20,
-                offset: const Offset(0, 8),
+                offset: const Offset(0, 6),
               ),
             ],
           ),
@@ -980,89 +935,102 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      color: palette.accent.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      widget.userName.isNotEmpty
-                          ? widget.userName[0].toUpperCase()
-                          : 'U',
-                      style: UnoTypography.body(
-                        color: palette.accent,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.userName,
-                          style: UnoTypography.body(
-                            color: palette.text,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        Text(
-                          'Acme Corp · LAN Pilot',
-                          style: UnoTypography.body(
-                            color: palette.textSec,
-                            fontSize: 11,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: palette.bgBase,
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: palette.div.withValues(alpha: 0.5)),
-                ),
-                child: Column(
-                  children: [
-                    _buildUserDetailRow('Host IP', '10.0.0.104', palette),
-                    const SizedBox(height: 4),
-                    _buildUserDetailRow('Server', '10.0.0.59:8000', palette),
-                    const SizedBox(height: 4),
-                    _buildUserDetailRow('Role', 'Pilot Lead (Admin)', palette),
-                  ],
+              // User Name
+              Text(
+                widget.userName.isNotEmpty ? widget.userName : 'Developer 1',
+                style: UnoTypography.body(
+                  color: palette.text,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 12),
-              Divider(height: 1, color: palette.div),
+              const SizedBox(height: 2),
+
+              // Email
+              Text(
+                'dev1@acme.com',
+                style: UnoTypography.mono(
+                  color: palette.textSec,
+                  fontSize: 11,
+                ),
+              ),
               const SizedBox(height: 8),
+
+              // Role Badge: MEMBER
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: palette.bgElevated,
+                  border: Border.all(color: palette.div),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  'MEMBER',
+                  style: UnoTypography.mono(
+                    color: palette.textSec,
+                    fontSize: 9,
+                    letterSpacing: 0.8,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Divider(height: 1, color: palette.div),
+              const SizedBox(height: 6),
+
+              // Settings Row
+              InkWell(
+                onTap: () {
+                  setState(() {
+                    _userMenuOpen = false;
+                    _activeTab = 'settings';
+                  });
+                },
+                borderRadius: BorderRadius.circular(6),
+                hoverColor: palette.accent.withValues(alpha: 0.08),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                  child: Row(
+                    children: [
+                      Icon(Icons.settings_outlined,
+                          size: 15, color: palette.textSec),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Settings',
+                        style: UnoTypography.body(
+                          color: palette.text,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Divider(height: 1, color: palette.div),
+              const SizedBox(height: 6),
+
+              // Sign Out Row
               InkWell(
                 onTap: () {
                   setState(() => _userMenuOpen = false);
                   widget.onLogOut();
                 },
                 borderRadius: BorderRadius.circular(6),
+                hoverColor: const Color(0xFFE05A5A).withValues(alpha: 0.08),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
                   child: Row(
                     children: [
-                      Icon(Icons.logout, size: 16, color: palette.inferred),
-                      const SizedBox(width: 8),
+                      const Icon(Icons.logout,
+                          size: 15, color: Color(0xFFE05A5A)),
+                      const SizedBox(width: 10),
                       Text(
                         'Sign Out',
                         style: UnoTypography.body(
-                          color: palette.inferred,
+                          color: const Color(0xFFE05A5A),
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
                         ),
@@ -1078,29 +1046,6 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
     );
   }
 
-  Widget _buildUserDetailRow(String label, String value, UnoPalette palette) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: UnoTypography.mono(
-            color: palette.textSec,
-            fontSize: 10,
-          ),
-        ),
-        Text(
-          value,
-          style: UnoTypography.mono(
-            color: palette.text,
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-
   // ─────────────────────────────────────────────────
   //  Settings Content (Real LAN Pilot Configuration)
   // ─────────────────────────────────────────────────
@@ -1113,6 +1058,30 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Back to Projects button
+              InkWell(
+                onTap: () => setState(() => _activeTab = 'projects'),
+                borderRadius: BorderRadius.circular(6),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.arrow_back, size: 14, color: palette.textSec),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Back to Projects',
+                        style: UnoTypography.mono(
+                          color: palette.textSec,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
               Text(
                 'LAN Pilot Environment Settings',
                 style: UnoTypography.body(

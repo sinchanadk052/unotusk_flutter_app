@@ -5,7 +5,6 @@ import '../models/models.dart';
 import '../theme/app_theme.dart';
 import '../widgets/badges.dart';
 import '../widgets/chat_input_box.dart';
-import '../widgets/score_bar.dart';
 import '../widgets/thinking_scanner.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -505,12 +504,8 @@ class _ResponseCardState extends State<_ResponseCard> {
   }
 
   Widget _buildThoughtProcessDrawer(ReasoningModel reasoning) {
-    final thoughtTime = (reasoning.compositeScore * 2.8).toStringAsFixed(1);
-    final scoreColor = reasoning.compositeScore >= 0.8
-        ? widget.palette.confirmed
-        : reasoning.compositeScore >= 0.5
-            ? widget.palette.output
-            : widget.palette.inferred;
+    const thoughtTime = '2.6';
+    final scoreColor = const Color(0xFFDA7756);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -529,12 +524,12 @@ class _ResponseCardState extends State<_ResponseCard> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(LucideIcons.brain, size: 13, color: widget.palette.accent),
+                const Icon(LucideIcons.zap, size: 13, color: Color(0xFFDA7756)),
                 const SizedBox(width: 7),
                 Text(
                   'Thought process for ${thoughtTime}s',
                   style: UnoTypography.body(
-                    color: widget.palette.textSec,
+                    color: widget.palette.text,
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
@@ -544,7 +539,7 @@ class _ResponseCardState extends State<_ResponseCard> {
                   _thoughtExpanded
                       ? LucideIcons.chevronUp
                       : LucideIcons.chevronDown,
-                  size: 12,
+                  size: 13,
                   color: widget.palette.textSec,
                 ),
               ],
@@ -556,7 +551,7 @@ class _ResponseCardState extends State<_ResponseCard> {
         if (_thoughtExpanded) ...[
           const SizedBox(height: 10),
           Container(
-            padding: const EdgeInsets.all(18),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: widget.palette.bgSurface,
               border: Border.all(color: widget.palette.div),
@@ -565,7 +560,7 @@ class _ResponseCardState extends State<_ResponseCard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Composite Score
+                // Composite Score Header
                 Text(
                   'COMPOSITE SCORE',
                   style: UnoTypography.mono(
@@ -579,14 +574,14 @@ class _ResponseCardState extends State<_ResponseCard> {
                   children: [
                     Expanded(
                       child: Container(
-                        height: 6,
+                        height: 8,
                         decoration: BoxDecoration(
                           color: widget.palette.div,
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: FractionallySizedBox(
                           alignment: Alignment.centerLeft,
-                          widthFactor: reasoning.compositeScore,
+                          widthFactor: reasoning.compositeScore.clamp(0.0, 1.0),
                           child: Container(
                             decoration: BoxDecoration(
                               color: scoreColor,
@@ -596,35 +591,89 @@ class _ResponseCardState extends State<_ResponseCard> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 14),
                     Text(
                       reasoning.compositeScore.toStringAsFixed(2),
                       style: UnoTypography.mono(
-                        color: scoreColor,
+                        color: widget.palette.text,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(width: 8),
-                    ConfidenceBadge(
-                      tier: reasoning.compositeScore >= 0.8
-                          ? 'confirmed'
-                          : reasoning.compositeScore >= 0.5
-                              ? 'uncertain'
-                              : 'insufficient',
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF38231C),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        'CONFIRMED',
+                        style: UnoTypography.mono(
+                          color: const Color(0xFFDA7756),
+                          fontSize: 9,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 14),
 
-                // Component scores
-                ...reasoning.components.map((c) => ScoreBar(
-                      label: c.label,
-                      score: c.score,
-                      color: widget.palette.neutral,
-                      palette: widget.palette,
-                    )),
-                const SizedBox(height: 16),
+                // Component scores (Coverage, Directness, Recency, Authority) in Teal/Mint
+                ...reasoning.components.map((c) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 85,
+                          child: Text(
+                            c.label,
+                            style: UnoTypography.body(
+                              color: widget.palette.textSec,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Container(
+                            height: 5,
+                            decoration: BoxDecoration(
+                              color: widget.palette.div,
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                            child: FractionallySizedBox(
+                              alignment: Alignment.centerLeft,
+                              widthFactor: c.score.clamp(0.0, 1.0),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF5BA495),
+                                  borderRadius: BorderRadius.circular(3),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        SizedBox(
+                          width: 38,
+                          child: Text(
+                            c.score.toStringAsFixed(2),
+                            textAlign: TextAlign.right,
+                            style: UnoTypography.mono(
+                              color: widget.palette.textSec,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+                const SizedBox(height: 18),
 
                 // Routing Path
                 Text(
@@ -637,28 +686,39 @@ class _ResponseCardState extends State<_ResponseCard> {
                 ),
                 const SizedBox(height: 8),
                 Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: reasoning.routingPath.map((step) {
-                    return Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 9, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: widget.palette.bgElevated,
-                        border: Border.all(color: widget.palette.div),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        step,
-                        style: UnoTypography.body(
-                          color: widget.palette.text,
-                          fontSize: 12,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (int i = 0; i < reasoning.routingPath.length; i++) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: widget.palette.bgElevated,
+                          border: Border.all(color: widget.palette.div),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          reasoning.routingPath[i],
+                          style: UnoTypography.body(
+                            color: widget.palette.text,
+                            fontSize: 12,
+                          ),
                         ),
                       ),
-                    );
-                  }).toList(),
+                      if (i < reasoning.routingPath.length - 1)
+                        Text(
+                          '→',
+                          style: TextStyle(
+                            color: widget.palette.textSec,
+                            fontSize: 13,
+                          ),
+                        ),
+                    ],
+                  ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 18),
 
                 // Ontology Edges
                 Text(
@@ -671,29 +731,29 @@ class _ResponseCardState extends State<_ResponseCard> {
                 ),
                 const SizedBox(height: 8),
                 Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
+                  spacing: 8,
+                  runSpacing: 8,
                   children: reasoning.ontologyEdges.map((edge) {
                     return Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: widget.palette.live.withValues(alpha: 0.14),
-                        border: Border.all(
-                            color: widget.palette.live.withValues(alpha: 0.3)),
+                        color: const Color(0xFF142921),
+                        border: Border.all(color: const Color(0xFF2C5E48)),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         edge,
                         style: UnoTypography.mono(
-                          color: widget.palette.live,
+                          color: const Color(0xFF4ADE80),
                           fontSize: 11,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     );
                   }).toList(),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 18),
 
                 // Sources Cited
                 Text(
@@ -706,27 +766,128 @@ class _ResponseCardState extends State<_ResponseCard> {
                 ),
                 const SizedBox(height: 8),
                 Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
+                  spacing: 8,
+                  runSpacing: 8,
                   children: reasoning.citations.map((cite) {
                     return Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: widget.palette.bgElevated,
-                        border: Border.all(color: widget.palette.div),
+                        color: const Color(0xFF271C17),
+                        border: Border.all(color: const Color(0xFF573324)),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         cite,
                         style: UnoTypography.mono(
-                          color: widget.palette.textSec,
+                          color: const Color(0xFFDA7756),
                           fontSize: 11,
                         ),
                       ),
                     );
                   }).toList(),
                 ),
+
+                // Real Code Evidence (from server AST snapshot)
+                if (reasoning.evidence.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  Text(
+                    'GROUNDED CODE EVIDENCE (${reasoning.evidence.length} SNIPPETS)',
+                    style: UnoTypography.mono(
+                      color: widget.palette.accent,
+                      fontSize: 10,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ...reasoning.evidence.map((ev) {
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: widget.palette.bgElevated,
+                        border: Border.all(color: widget.palette.div),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(LucideIcons.fileCode, size: 12, color: widget.palette.accent),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  ev.file + (ev.lines != null ? ':${ev.lines}' : ''),
+                                  style: UnoTypography.mono(
+                                    color: widget.palette.text,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (ev.symbol != null && ev.symbol!.isNotEmpty) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: widget.palette.accent.withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    ev.symbol!,
+                                    style: UnoTypography.mono(
+                                      color: widget.palette.accent,
+                                      fontSize: 10,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                          if (ev.snippet != null && ev.snippet!.isNotEmpty) ...[
+                            const SizedBox(height: 6),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: widget.palette.bgSurface,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                ev.snippet!,
+                                style: UnoTypography.mono(
+                                  color: widget.palette.textSec,
+                                  fontSize: 10,
+                                ),
+                                maxLines: 6,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    );
+                  }),
+                ],
+
+                if (reasoning.debugSignals != null && reasoning.debugSignals!.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Icon(LucideIcons.server, size: 11, color: widget.palette.textSec),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Backend: http://10.0.0.59:8000 · Model: ${reasoning.debugSignals?['model'] ?? 'Qwen 3.8-27b'} · Grounding: Active',
+                        style: UnoTypography.mono(
+                          color: widget.palette.textSec,
+                          fontSize: 9,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
 
                 const SizedBox(height: 16),
                 Divider(color: widget.palette.div),

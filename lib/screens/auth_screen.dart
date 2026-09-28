@@ -1,12 +1,14 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import '../models/models.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/unotusk_logo.dart';
 
 class AuthScreen extends StatefulWidget {
   final UnoPalette palette;
-  final Function(String name, String org) onAuthenticated;
+  final Function(UserModel user) onAuthenticated;
   final String? sessionMsg;
 
   const AuthScreen({
@@ -25,10 +27,13 @@ class _AuthScreenState extends State<AuthScreen> {
   // 'entry' (Image 2) -> 'checking-org' (Image 4) -> 'sign-in' (Image 5)
   // 'entry' -> 'create-org' (Image 3 via Configure custom OIDC issuer)
   String _state = 'entry';
+  bool _isServerConnected = false;
+  Timer? _healthTimer;
 
-  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _emailController =
+      TextEditingController(text: 'lead@acme.com');
   final TextEditingController _passwordController =
-      TextEditingController(text: 'password123');
+      TextEditingController(text: 'adminpassword123');
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _orgController = TextEditingController();
 
@@ -41,12 +46,24 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   void initState() {
     super.initState();
-    // Pre-flight health probe to http://10.0.0.59:8000
-    ApiService.checkHealth();
+    _checkServer();
+    // Continuously check server health every 4 seconds
+    _healthTimer =
+        Timer.periodic(const Duration(seconds: 4), (_) => _checkServer());
+  }
+
+  void _checkServer() async {
+    final ok = await ApiService.checkHealth();
+    if (mounted) {
+      setState(() {
+        _isServerConnected = ok;
+      });
+    }
   }
 
   @override
   void dispose() {
+    _healthTimer?.cancel();
     _emailController.dispose();
     _passwordController.dispose();
     _nameController.dispose();
@@ -88,7 +105,7 @@ class _AuthScreenState extends State<AuthScreen> {
   void _finishAuthentication() async {
     final email = _emailController.text.trim().isNotEmpty
         ? _emailController.text.trim()
-        : 'dev1@acme.com';
+        : 'lead@acme.com';
     final password = _passwordController.text;
 
     setState(() {
@@ -102,13 +119,13 @@ class _AuthScreenState extends State<AuthScreen> {
       setState(() {
         _isLoading = false;
       });
-      widget.onAuthenticated(user.name, user.org);
+      widget.onAuthenticated(user);
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
         _errorMessage =
-            'Sign in failed: Cannot reach backend at http://10.0.0.59:8000.\n$e';
+            'Sign in failed on http://10.0.0.59:8000:\n$e';
       });
     }
   }
@@ -208,14 +225,15 @@ class _AuthScreenState extends State<AuthScreen> {
                   vertical: _state == 'checking-org' ? 32 : 32,
                 ),
                 decoration: BoxDecoration(
-                  color: widget.palette.bgElevated,
+                  color: widget.palette.bgSurface,
                   border: Border.all(color: widget.palette.div),
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.24),
-                      blurRadius: 56,
-                      offset: const Offset(0, 24),
+                      color: Colors.black.withValues(
+                          alpha: widget.palette.isDark ? 0.36 : 0.05),
+                      blurRadius: widget.palette.isDark ? 56 : 36,
+                      offset: const Offset(0, 16),
                     ),
                   ],
                 ),
@@ -280,29 +298,50 @@ class _AuthScreenState extends State<AuthScreen> {
   //  Footer (Server URL status)
   // ─────────────────────────────────────────────────
   Widget _buildServerFooter() {
+    final isOnline = _isServerConnected || ApiService.isConnected;
+    final dotColor = isOnline
+        ? const Color(0xFF6EC8B8) // Green / mint teal when server is on
+        : const Color(0xFFE05A5A); // Red when server is not on
+
     return Column(
       children: [
         const SizedBox(height: 24),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 6,
-              height: 6,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: Color(0xFF6EC8B8),
-              ),
+        InkWell(
+          onTap: _checkServer,
+          borderRadius: BorderRadius.circular(4),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  width: 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: dotColor,
+                    boxShadow: [
+                      BoxShadow(
+                        color: dotColor.withValues(alpha: 0.45),
+                        blurRadius: 4,
+                        spreadRadius: 1,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Server: http://10.0.0.59:8000',
+                  style: UnoTypography.mono(
+                    color: widget.palette.textSec,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            Text(
-              'Server: http://10.0.0.59:8000',
-              style: UnoTypography.mono(
-                color: widget.palette.textSec,
-                fontSize: 11,
-              ),
-            ),
-          ],
+          ),
         ),
       ],
     );
@@ -351,7 +390,7 @@ class _AuthScreenState extends State<AuthScreen> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
-            color: widget.palette.bgSurface,
+            color: widget.palette.bgElevated,
             border: Border.all(color: widget.palette.div),
             borderRadius: BorderRadius.circular(10),
           ),
@@ -378,8 +417,8 @@ class _AuthScreenState extends State<AuthScreen> {
           child: ElevatedButton(
             onPressed: _isLoading ? null : _verifyEmail,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF45342C),
-              foregroundColor: const Color(0xFFC7B5AE),
+              backgroundColor: widget.palette.accent,
+              foregroundColor: Colors.white,
               elevation: 0,
               padding: EdgeInsets.zero,
               shape: RoundedRectangleBorder(
@@ -393,13 +432,13 @@ class _AuthScreenState extends State<AuthScreen> {
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       valueColor:
-                          AlwaysStoppedAnimation<Color>(Color(0xFFC7B5AE)),
+                          AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
                   )
                 : Text(
                     'Continue with OIDC Discovery',
                     style: UnoTypography.body(
-                      color: const Color(0xFFC7B5AE),
+                      color: Colors.white,
                       fontSize: 13.5,
                       fontWeight: FontWeight.w600,
                     ),
@@ -525,7 +564,7 @@ class _AuthScreenState extends State<AuthScreen> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
-            color: widget.palette.bgSurface,
+            color: widget.palette.bgElevated,
             border: Border.all(color: widget.palette.div),
             borderRadius: BorderRadius.circular(10),
           ),
@@ -558,7 +597,7 @@ class _AuthScreenState extends State<AuthScreen> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
-            color: widget.palette.bgSurface,
+            color: widget.palette.bgElevated,
             border: Border.all(color: widget.palette.div),
             borderRadius: BorderRadius.circular(10),
           ),
@@ -591,7 +630,7 @@ class _AuthScreenState extends State<AuthScreen> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
-            color: widget.palette.bgSurface,
+            color: widget.palette.bgElevated,
             border: Border.all(color: widget.palette.div),
             borderRadius: BorderRadius.circular(10),
           ),
@@ -694,12 +733,15 @@ class _AuthScreenState extends State<AuthScreen> {
                         orgName: org,
                         password: password,
                         role: _selectedRole,
+                        email: _emailController.text.trim().isNotEmpty
+                            ? _emailController.text.trim()
+                            : null,
                       );
                       if (!mounted) return;
                       setState(() {
                         _isLoading = false;
                       });
-                      widget.onAuthenticated(user.name, user.org);
+                      widget.onAuthenticated(user);
                     } catch (e) {
                       if (!mounted) return;
                       setState(() {
@@ -710,8 +752,8 @@ class _AuthScreenState extends State<AuthScreen> {
                     }
                   },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF45342C),
-              foregroundColor: const Color(0xFFC7B5AE),
+              backgroundColor: widget.palette.accent,
+              foregroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(9),
@@ -720,7 +762,7 @@ class _AuthScreenState extends State<AuthScreen> {
             child: Text(
               'Create workspace',
               style: UnoTypography.body(
-                color: const Color(0xFFC7B5AE),
+                color: Colors.white,
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
@@ -826,7 +868,7 @@ class _AuthScreenState extends State<AuthScreen> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
-            color: widget.palette.bgSurface,
+            color: widget.palette.bgElevated,
             border: Border.all(color: widget.palette.div),
             borderRadius: BorderRadius.circular(10),
           ),
@@ -854,7 +896,7 @@ class _AuthScreenState extends State<AuthScreen> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
-            color: widget.palette.bgSurface,
+            color: widget.palette.bgElevated,
             border: Border.all(color: widget.palette.div),
             borderRadius: BorderRadius.circular(10),
           ),
@@ -898,7 +940,7 @@ class _AuthScreenState extends State<AuthScreen> {
           child: ElevatedButton(
             onPressed: _isLoading ? null : () => _finishAuthentication(),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFD4725A),
+              backgroundColor: widget.palette.accent,
               foregroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(
@@ -941,7 +983,7 @@ class _AuthScreenState extends State<AuthScreen> {
     return SizedBox(
       height: 40,
       child: Material(
-        color: widget.palette.bgSurface,
+        color: widget.palette.bgElevated,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(9),
           side: BorderSide(color: widget.palette.div),

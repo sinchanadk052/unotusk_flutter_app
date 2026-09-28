@@ -18,19 +18,10 @@ class SpecChatDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final thread = [
-      {'role': 'user', 'text': spec.query},
-      {
-        'role': 'ai',
-        'text':
-            '[CONFIRMED · score ${spec.score.toStringAsFixed(2)}] Verified decision and spec context retrieved from server at 10.0.0.59:8000.'
-      }
-    ];
-
     return Container(
-      width: 480,
+      width: 520,
       decoration: BoxDecoration(
-        color: palette.bgElevated,
+        color: palette.bgSurface,
         border: Border(left: BorderSide(color: palette.div)),
         boxShadow: [
           BoxShadow(
@@ -61,22 +52,30 @@ class SpecChatDrawer extends StatelessWidget {
                         QueryTierBadge(tier: spec.queryType),
                         const SizedBox(width: 6),
                         ConfidenceBadge(tier: spec.confidence),
-                        if (spec.hasBDD) ...[
+                        if (spec.severity != null) ...[
                           const SizedBox(width: 6),
                           Container(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
+                              color: (spec.severity == 'CRITICAL' || spec.severity == 'HIGH')
+                                  ? const Color(0xFFD4725A).withValues(alpha: 0.15)
+                                  : palette.live.withValues(alpha: 0.15),
                               border: Border.all(
-                                  color:
-                                      palette.inferred.withValues(alpha: 0.44)),
+                                color: (spec.severity == 'CRITICAL' || spec.severity == 'HIGH')
+                                    ? const Color(0xFFD4725A).withValues(alpha: 0.44)
+                                    : palette.live.withValues(alpha: 0.44),
+                              ),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
-                              'BDD',
+                              spec.severity!,
                               style: UnoTypography.mono(
-                                color: palette.inferred,
+                                color: (spec.severity == 'CRITICAL' || spec.severity == 'HIGH')
+                                    ? const Color(0xFFD4725A)
+                                    : palette.live,
                                 fontSize: 9,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
@@ -111,7 +110,7 @@ class SpecChatDrawer extends StatelessWidget {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      'Score ${spec.score.toStringAsFixed(2)}',
+                      'Score ${(spec.score * 100).toStringAsFixed(1)}',
                       style: UnoTypography.mono(
                         color: palette.textSec,
                         fontSize: 11,
@@ -123,63 +122,164 @@ class SpecChatDrawer extends StatelessWidget {
             ),
           ),
 
-          // Messages List
+          // Details List
           Expanded(
-            child: ListView.builder(
+            child: ListView(
               padding: const EdgeInsets.all(20),
-              itemCount: thread.length,
-              itemBuilder: (context, index) {
-                final msg = thread[index];
-                final isUser = msg['role'] == 'user';
-
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 18),
-                  child: Column(
-                    crossAxisAlignment: isUser
-                        ? CrossAxisAlignment.end
-                        : CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        isUser ? 'YOU' : 'UNOTUSK',
-                        style: UnoTypography.mono(
-                          color: isUser ? palette.accent : palette.textSec,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.6,
-                        ),
-                      ),
-                      const SizedBox(height: 5),
-                      Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: isUser
-                              ? palette.accent.withValues(alpha: 0.12)
-                              : palette.bgSurface,
-                          border: Border.all(
-                            color: isUser
-                                ? palette.accent.withValues(alpha: 0.28)
-                                : palette.div,
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          msg['text'] ?? '',
-                          style: isUser
-                              ? UnoTypography.body(
-                                  color: palette.text,
-                                  fontSize: 14,
-                                )
-                              : UnoTypography.mono(
-                                  color: palette.text,
-                                  fontSize: 13,
-                                  letterSpacing: 0.1,
-                                ),
-                        ),
-                      ),
-                    ],
+              children: [
+                // Description
+                if (spec.description != null && spec.description!.isNotEmpty) ...[
+                  Text(
+                    'FINDING DESCRIPTION',
+                    style: UnoTypography.mono(
+                      color: palette.textSec,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.8,
+                    ),
                   ),
-                );
-              },
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: palette.bgSurface,
+                      border: Border.all(color: palette.div),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      spec.description!,
+                      style: UnoTypography.body(color: palette.text, fontSize: 13),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                ],
+
+                // Why It Matters
+                if (spec.whyItMatters != null && spec.whyItMatters!.isNotEmpty) ...[
+                  Text(
+                    'WHY IT MATTERS',
+                    style: UnoTypography.mono(
+                      color: palette.accent,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: palette.accent.withValues(alpha: 0.08),
+                      border: Border.all(color: palette.accent.withValues(alpha: 0.25)),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      spec.whyItMatters!,
+                      style: UnoTypography.body(color: palette.text, fontSize: 13),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                ],
+
+                // Recommendation
+                if (spec.recommendation != null && spec.recommendation!.isNotEmpty) ...[
+                  Text(
+                    'RECOMMENDED ARCHITECTURAL ACTION',
+                    style: UnoTypography.mono(
+                      color: const Color(0xFF6EC8B8),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF6EC8B8).withValues(alpha: 0.08),
+                      border: Border.all(color: const Color(0xFF6EC8B8).withValues(alpha: 0.25)),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      spec.recommendation!,
+                      style: UnoTypography.body(color: palette.text, fontSize: 13),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                ],
+
+                // Evidence Snippets
+                if (spec.evidence.isNotEmpty) ...[
+                  Text(
+                    'GROUNDED CODE EVIDENCE (${spec.evidence.length})',
+                    style: UnoTypography.mono(
+                      color: palette.textSec,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ...spec.evidence.map((ev) {
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: palette.bgSurface,
+                        border: Border.all(color: palette.div),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(LucideIcons.fileCode, size: 13, color: palette.accent),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  ev.file,
+                                  style: UnoTypography.mono(
+                                    color: palette.accent,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              if (ev.lines != null)
+                                Text(
+                                  'L${ev.lines}',
+                                  style: UnoTypography.mono(
+                                    color: palette.textSec,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                            ],
+                          ),
+                          if (ev.snippet != null && ev.snippet!.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: palette.bgElevated,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                ev.snippet!,
+                                style: UnoTypography.mono(
+                                  color: palette.textSec,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    );
+                  }),
+                ],
+              ],
             ),
           ),
         ],
