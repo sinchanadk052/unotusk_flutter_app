@@ -332,11 +332,14 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  'Server: http://10.0.0.59:8000',
-                  style: UnoTypography.mono(
-                    color: widget.palette.textSec,
-                    fontSize: 11,
+                Flexible(
+                  child: Text(
+                    'Server: http://10.0.0.59:8000',
+                    overflow: TextOverflow.ellipsis,
+                    style: UnoTypography.mono(
+                      color: widget.palette.textSec,
+                      fontSize: 11,
+                    ),
                   ),
                 ),
               ],

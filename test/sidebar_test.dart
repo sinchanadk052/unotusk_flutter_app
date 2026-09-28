@@ -61,9 +61,9 @@ void main() {
     expect(plusTopLeft.dx, greaterThan(20.0));
     expect(plusTopLeft.dx, lessThan(40.0));
 
-    // Verify Ask (zap) is removed and first nav item (clipboardList) is centered
+    // Verify Ask (zap) is removed and first nav item (folder) is centered
     expect(find.byIcon(LucideIcons.zap), findsNothing);
-    final clipFinder = find.byIcon(LucideIcons.clipboardList);
+    final clipFinder = find.byIcon(LucideIcons.folder);
     expect(clipFinder, findsOneWidget);
     final clipTopLeft = tester.getTopLeft(clipFinder);
     expect(clipTopLeft.dx, greaterThan(20.0));
@@ -118,7 +118,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Tap collapse button
-    await tester.tap(find.byIcon(LucideIcons.chevronLeft));
+    await tester.tap(find.byIcon(LucideIcons.panelLeftClose));
     // Pump frames during collapse animation
     await tester.pump(const Duration(milliseconds: 50));
     await tester.pump(const Duration(milliseconds: 50));
