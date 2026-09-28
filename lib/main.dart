@@ -48,7 +48,7 @@ class _UnotuskAppState extends State<UnotuskApp> {
     final palette = _isDark ? UnoPalette.dark : UnoPalette.light;
 
     return MaterialApp(
-      title: 'Unotusk MVP',
+      title: '',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: _isDark ? Brightness.dark : Brightness.light,

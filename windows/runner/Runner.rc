@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "unotusk_flutter_app" "\0"
+            VALUE "CompanyName", "Unotusk" "\0"
+            VALUE "FileDescription", "Unotusk" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "unotusk_flutter_app" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "unotusk_flutter_app.exe" "\0"
-            VALUE "ProductName", "unotusk_flutter_app" "\0"
+            VALUE "InternalName", "Unotusk" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 Unotusk. All rights reserved." "\0"
+            VALUE "OriginalFilename", "Unotusk.exe" "\0"
+            VALUE "ProductName", "Unotusk" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
