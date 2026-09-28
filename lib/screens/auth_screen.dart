@@ -173,12 +173,12 @@ class _AuthScreenState extends State<AuthScreen> {
         children: [
           // Top Left Brand Bar
           Positioned(
-            top: 24,
-            left: 28,
+            top: 10,
+            left: 20,
             child: Row(
               children: [
-                UnotuskLogo(size: 22, onDark: isDark),
-                const SizedBox(width: 9),
+                UnotuskLogo(size: 20, onDark: isDark),
+                const SizedBox(width: 8),
                 Text(
                   'Unotusk',
                   style: UnoTypography.brandSerif(

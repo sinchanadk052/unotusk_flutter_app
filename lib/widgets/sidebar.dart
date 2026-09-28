@@ -394,7 +394,7 @@ class _UnoSidebarState extends State<UnoSidebar> {
         children: [
         // Brand Header — web: padding "0 14px", marginBottom "12px"
         Padding(
-          padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
+          padding: const EdgeInsets.fromLTRB(14, 8, 14, 10),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -679,7 +679,7 @@ class _UnoSidebarState extends State<UnoSidebar> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-        const SizedBox(height: 14),
+        const SizedBox(height: 8),
         // Logo
         UnotuskLogo(size: 22, onDark: isDark),
         const SizedBox(height: 12),

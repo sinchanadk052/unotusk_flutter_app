@@ -107,6 +107,9 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
         children: [
           Column(
             children: [
+              // ─── Top Brand Row (Unotusk and its logo up) ───
+              _buildBrandTopRow(palette, isNarrow),
+
               // ─── Top Navigation Bar ───
               _buildTopBar(palette, isNarrow),
 
@@ -365,11 +368,36 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
   }
 
   // ─────────────────────────────────────────────────
+  //  Top Brand Row (Unotusk and its logo up at the top)
+  // ─────────────────────────────────────────────────
+  Widget _buildBrandTopRow(UnoPalette palette, bool isNarrow) {
+    return Container(
+      height: 36,
+      padding: EdgeInsets.symmetric(horizontal: isNarrow ? 12 : 20),
+      color: palette.bgBase,
+      alignment: Alignment.centerLeft,
+      child: Row(
+        children: [
+          UnotuskLogo(size: 20, onDark: palette.isDark),
+          const SizedBox(width: 8),
+          Text(
+            'Unotusk',
+            style: UnoTypography.brandSerif(
+              palette: palette,
+              fontSize: 16,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────────
   //  Top Navigation Bar
   // ─────────────────────────────────────────────────
   Widget _buildTopBar(UnoPalette palette, bool isNarrow) {
     return Container(
-      height: 52,
+      height: 48,
       decoration: BoxDecoration(
         color: palette.bgSurface,
         border: Border(
@@ -379,20 +407,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
       padding: EdgeInsets.symmetric(horizontal: isNarrow ? 12 : 20),
       child: Row(
         children: [
-          // ── Logo ──
-          UnotuskLogo(size: 24, onDark: palette.isDark),
-          const SizedBox(width: 10),
-          Text(
-            'Unotusk',
-            style: UnoTypography.brandSerif(
-              palette: palette,
-              fontSize: 16,
-            ),
-          ),
-
-          const SizedBox(width: 24),
-
-          // ── Tab: Projects ──
+          // ── Tab: Projects (comes in place of Unotusk and its logo) ──
           _buildTabButton('Projects', Icons.folder_outlined, 'projects', palette),
 
           const Spacer(),
@@ -912,7 +927,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
   // ─────────────────────────────────────────────────
   Widget _buildUserMenuDropdown(UnoPalette palette) {
     return Positioned(
-      top: 50,
+      top: 84,
       right: 16,
       child: GestureDetector(
         onTap: () {}, // Prevent closing when tapping inside
