@@ -18,7 +18,6 @@ import 'services/api_service.dart';
 import 'theme/app_theme.dart';
 import 'widgets/sidebar.dart';
 import 'widgets/top_nav_bar.dart';
-import 'widgets/window_title_bar.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -380,17 +379,10 @@ class _AppShellState extends State<AppShell> {
 
     return Scaffold(
       backgroundColor: palette.bgBase,
-      body: Column(
+      body: Stack(
         children: [
-          // ── Custom Window Title Bar ──
-          WindowTitleBar(palette: palette),
-
-          // ── Main Content ──
-          Expanded(
-            child: Stack(
-              children: [
-                Row(
-                  children: [
+          Row(
+            children: [
                     // Sidebar (Desktop / Wide screen)
                     if (!isMobile)
                       UnoSidebar(
@@ -574,9 +566,6 @@ class _AppShellState extends State<AppShell> {
               palette: palette,
               onClose: () => setState(() => _helpModalOpen = false),
             ),
-              ],
-            ),
-          ),
         ],
       ),
     );

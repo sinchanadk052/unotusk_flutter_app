@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:window_manager/window_manager.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
@@ -394,22 +395,26 @@ class _UnoSidebarState extends State<UnoSidebar> {
         children: [
         // Brand Header — web: padding "0 14px", marginBottom "12px"
         Padding(
-          padding: const EdgeInsets.fromLTRB(14, 8, 14, 10),
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  UnotuskLogo(size: 22, onDark: isDark),
-                  const SizedBox(width: 9),
-                  Text(
-                    'Unotusk',
-                    style: UnoTypography.brandSerif(
-                      palette: widget.palette,
-                      fontSize: 17,
-                    ),
+              Expanded(
+                child: DragToMoveArea(
+                  child: Row(
+                    children: [
+                      UnotuskLogo(size: 22, onDark: isDark),
+                      const SizedBox(width: 9),
+                      Text(
+                        'Unotusk',
+                        style: UnoTypography.brandSerif(
+                          palette: widget.palette,
+                          fontSize: 17,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
               // Collapse button
               InkWell(
@@ -679,9 +684,11 @@ class _UnoSidebarState extends State<UnoSidebar> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         // Logo
-        UnotuskLogo(size: 22, onDark: isDark),
+        DragToMoveArea(
+          child: UnotuskLogo(size: 22, onDark: isDark),
+        ),
         const SizedBox(height: 12),
 
         // Expand button — web: tc component, 36×36, borderRadius 10, bgElevated, border div

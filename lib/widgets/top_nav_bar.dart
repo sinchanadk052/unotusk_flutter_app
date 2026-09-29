@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:window_manager/window_manager.dart';
 import '../theme/app_theme.dart';
+import 'desktop_window_controls.dart';
 
 class TopNavBar extends StatelessWidget {
   final UnoPalette palette;
@@ -39,16 +42,18 @@ class TopNavBar extends StatelessWidget {
             ? 'Kushall-07/$projectName'
             : 'Kushall-07/SyncGuard');
     final displayBranch = branchName ?? 'main';
+    final isDesktop = Platform.isWindows || Platform.isLinux || Platform.isMacOS;
 
     return Container(
       height: 52,
-      padding: showSidebarToggle
-          ? const EdgeInsets.fromLTRB(10, 0, 16, 0)
-          : const EdgeInsets.symmetric(horizontal: 24),
+      padding: EdgeInsets.only(
+        left: showSidebarToggle ? 10 : 20,
+        right: isDesktop ? 0 : 24,
+      ),
       color: Colors.transparent,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          // ── Left: Sidebar toggle + Project Switcher ──
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -107,7 +112,22 @@ class TopNavBar extends StatelessWidget {
               ),
             ],
           ),
+
+          // ── Middle: Draggable window title bar area ──
+          Expanded(
+            child: isDesktop
+                ? const DragToMoveArea(
+                    child: SizedBox(
+                      height: 52,
+                      width: double.infinity,
+                    ),
+                  )
+                : const SizedBox(height: 52),
+          ),
+
+          // ── Right: Notification, Theme, and Desktop Window Controls ──
           Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               // Notification bell button
               Stack(
@@ -178,6 +198,12 @@ class TopNavBar extends StatelessWidget {
                   ),
                 ),
               ),
+
+              // Desktop Window Controls (Minimize, Maximize/Restore, Close)
+              if (isDesktop) ...[
+                const SizedBox(width: 8),
+                DesktopWindowControls(palette: palette, height: 52),
+              ],
             ],
           ),
         ],

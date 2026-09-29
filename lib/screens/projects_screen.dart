@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
-import '../widgets/window_title_bar.dart';
+import 'dart:io';
+import 'package:window_manager/window_manager.dart';
+import '../widgets/desktop_window_controls.dart';
 
 /// Projects dashboard screen with top nav bar and project list.
 /// Matches the reference design: Unotusk logo, Projects/Settings tabs,
@@ -107,9 +109,6 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
         children: [
           Column(
             children: [
-              // ─── Custom Window Title Bar ───
-              WindowTitleBar(palette: palette),
-
               // ─── Top Navigation Bar ───
               _buildTopBar(palette, isNarrow),
 
@@ -372,6 +371,8 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
   //  Top Navigation Bar
   // ─────────────────────────────────────────────────
   Widget _buildTopBar(UnoPalette palette, bool isNarrow) {
+    final isDesktop = Platform.isWindows || Platform.isLinux || Platform.isMacOS;
+
     return Container(
       height: 48,
       decoration: BoxDecoration(
@@ -380,13 +381,26 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
           bottom: BorderSide(color: palette.div, width: 1),
         ),
       ),
-      padding: EdgeInsets.symmetric(horizontal: isNarrow ? 12 : 20),
+      padding: EdgeInsets.only(
+        left: isNarrow ? 12 : 20,
+        right: isDesktop ? 0 : (isNarrow ? 12 : 20),
+      ),
       child: Row(
         children: [
-          // ── Tab: Projects (comes in place of Unotusk and its logo) ──
+          // ── Tab: Projects ──
           _buildTabButton('Projects', Icons.folder_outlined, 'projects', palette),
 
-          const Spacer(),
+          // ── Draggable window area ──
+          Expanded(
+            child: isDesktop
+                ? const DragToMoveArea(
+                    child: SizedBox(
+                      height: 48,
+                      width: double.infinity,
+                    ),
+                  )
+                : const SizedBox(height: 48),
+          ),
 
           // ── Connected Badge ──
           Builder(
@@ -494,6 +508,12 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
               ],
             ),
           ),
+
+          // Desktop Window Controls (Minimize, Maximize/Restore, Close)
+          if (isDesktop) ...[
+            const SizedBox(width: 8),
+            DesktopWindowControls(palette: palette, height: 48),
+          ],
         ],
       ),
     );
