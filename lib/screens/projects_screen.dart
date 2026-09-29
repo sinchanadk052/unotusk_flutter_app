@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
-import '../widgets/unotusk_logo.dart';
+import '../widgets/window_title_bar.dart';
 
 /// Projects dashboard screen with top nav bar and project list.
 /// Matches the reference design: Unotusk logo, Projects/Settings tabs,
@@ -107,8 +107,8 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
         children: [
           Column(
             children: [
-              // ─── Top Brand Row (Unotusk and its logo up) ───
-              _buildBrandTopRow(palette, isNarrow),
+              // ─── Custom Window Title Bar ───
+              WindowTitleBar(palette: palette),
 
               // ─── Top Navigation Bar ───
               _buildTopBar(palette, isNarrow),
@@ -367,30 +367,6 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
     );
   }
 
-  // ─────────────────────────────────────────────────
-  //  Top Brand Row (Unotusk and its logo up at the top)
-  // ─────────────────────────────────────────────────
-  Widget _buildBrandTopRow(UnoPalette palette, bool isNarrow) {
-    return Container(
-      height: 36,
-      padding: EdgeInsets.symmetric(horizontal: isNarrow ? 12 : 20),
-      color: palette.bgBase,
-      alignment: Alignment.centerLeft,
-      child: Row(
-        children: [
-          UnotuskLogo(size: 20, onDark: palette.isDark),
-          const SizedBox(width: 8),
-          Text(
-            'Unotusk',
-            style: UnoTypography.brandSerif(
-              palette: palette,
-              fontSize: 16,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   // ─────────────────────────────────────────────────
   //  Top Navigation Bar
