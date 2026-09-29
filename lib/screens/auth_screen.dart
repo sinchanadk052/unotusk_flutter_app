@@ -4,7 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
-import '../widgets/window_title_bar.dart';
+import '../widgets/unotusk_logo.dart';
 
 class AuthScreen extends StatefulWidget {
   final UnoPalette palette;
@@ -165,64 +165,79 @@ class _AuthScreenState extends State<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = widget.palette.bgBase == const Color(0xFF181816);
+
     return Scaffold(
       backgroundColor: widget.palette.bgBase,
-      body: Column(
+      body: Stack(
         children: [
-          // ── Custom Window Title Bar with OIDC badge ──
-          WindowTitleBar(
-            palette: widget.palette,
-            trailing: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: widget.palette.accent.withValues(alpha: 0.125),
-                border: Border.all(
-                  color: widget.palette.accent.withValues(alpha: 0.25),
+          // Top Left Brand Bar
+          Positioned(
+            top: 10,
+            left: 20,
+            child: Row(
+              children: [
+                UnotuskLogo(size: 20, onDark: isDark),
+                const SizedBox(width: 8),
+                Text(
+                  'Unotusk',
+                  style: UnoTypography.brandSerif(
+                    palette: widget.palette,
+                    fontSize: 17,
+                  ),
                 ),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                'OIDC 1.0 SSO',
-                style: UnoTypography.mono(
-                  color: widget.palette.accent,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
+                const SizedBox(width: 14),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: widget.palette.accent.withValues(alpha: 0.125),
+                    border: Border.all(
+                      color: widget.palette.accent.withValues(alpha: 0.25),
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    'OIDC 1.0 SSO',
+                    style: UnoTypography.mono(
+                      color: widget.palette.accent,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
 
-          // ── Center Card ──
-          Expanded(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(24, 40, 24, 48),
-                child: Container(
-                  constraints: BoxConstraints(
-                    maxWidth: _state == 'checking-org' ? 380 : 420,
-                  ),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: _state == 'checking-org'
-                        ? 28
-                        : (MediaQuery.of(context).size.width < 450 ? 20 : 32),
-                    vertical: _state == 'checking-org' ? 32 : 32,
-                  ),
-                  decoration: BoxDecoration(
-                    color: widget.palette.bgSurface,
-                    border: Border.all(color: widget.palette.div),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(
-                            alpha: widget.palette.isDark ? 0.36 : 0.05),
-                        blurRadius: widget.palette.isDark ? 56 : 36,
-                        offset: const Offset(0, 16),
-                      ),
-                    ],
-                  ),
-                  child: _buildStateContent(),
+          // Center Card
+          Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 80, 24, 48),
+              child: Container(
+                constraints: BoxConstraints(
+                  maxWidth: _state == 'checking-org' ? 380 : 420,
                 ),
+                padding: EdgeInsets.symmetric(
+                  horizontal: _state == 'checking-org'
+                      ? 28
+                      : (MediaQuery.of(context).size.width < 450 ? 20 : 32),
+                  vertical: _state == 'checking-org' ? 32 : 32,
+                ),
+                decoration: BoxDecoration(
+                  color: widget.palette.bgSurface,
+                  border: Border.all(color: widget.palette.div),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(
+                          alpha: widget.palette.isDark ? 0.36 : 0.05),
+                      blurRadius: widget.palette.isDark ? 56 : 36,
+                      offset: const Offset(0, 16),
+                    ),
+                  ],
+                ),
+                child: _buildStateContent(),
               ),
             ),
           ),

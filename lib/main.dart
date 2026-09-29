@@ -1,7 +1,5 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:window_manager/window_manager.dart';
 import 'dialogs/archived_modal.dart';
 import 'dialogs/help_modal.dart';
 import 'dialogs/notifications_panel.dart';
@@ -18,31 +16,8 @@ import 'services/api_service.dart';
 import 'theme/app_theme.dart';
 import 'widgets/sidebar.dart';
 import 'widgets/top_nav_bar.dart';
-import 'widgets/window_title_bar.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize window_manager for desktop platforms
-  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-    await windowManager.ensureInitialized();
-
-    const windowOptions = WindowOptions(
-      size: Size(1280, 720),
-      minimumSize: Size(800, 500),
-      center: true,
-      backgroundColor: Colors.transparent,
-      skipTaskbar: false,
-      titleBarStyle: TitleBarStyle.hidden,
-      windowButtonVisibility: false,
-    );
-
-    windowManager.waitUntilReadyToShow(windowOptions, () async {
-      await windowManager.show();
-      await windowManager.focus();
-    });
-  }
-
+void main() {
   runApp(const UnotuskApp());
 }
 
@@ -380,40 +355,33 @@ class _AppShellState extends State<AppShell> {
 
     return Scaffold(
       backgroundColor: palette.bgBase,
-      body: Column(
+      body: Stack(
         children: [
-          // ── Custom Window Title Bar ──
-          WindowTitleBar(palette: palette),
-
-          // ── Main Content ──
-          Expanded(
-            child: Stack(
-              children: [
-                Row(
-                  children: [
-                    // Sidebar (Desktop / Wide screen)
-                    if (!isMobile)
-                      UnoSidebar(
-                        open: _sidebarOpen,
-                        onToggle: () => setState(() => _sidebarOpen = !_sidebarOpen),
-                        onNewQuery: _handleNewQuery,
-                        palette: palette,
-                        activeView: _activeView,
-                        onViewChange: (v) => setState(() {
-                          if (v == 'projects') {
-                            _handleBackToProjects();
-                          } else {
-                            _activeView = v;
-                            _notificationsOpen = false;
-                          }
-                        }),
-                        onLoadRecentChat: _loadRecentChat,
-                        user: _user,
-                        onLogOut: _handleLogOut,
-                        onNavigateSettings: _openSettingsTab,
-                        onOpenArchivedModal: () =>
-                            setState(() => _archivedModalOpen = true),
-                      ),
+          Row(
+            children: [
+              // Sidebar (Desktop / Wide screen)
+              if (!isMobile)
+                UnoSidebar(
+                  open: _sidebarOpen,
+                  onToggle: () => setState(() => _sidebarOpen = !_sidebarOpen),
+                  onNewQuery: _handleNewQuery,
+                  palette: palette,
+                  activeView: _activeView,
+                  onViewChange: (v) => setState(() {
+                    if (v == 'projects') {
+                      _handleBackToProjects();
+                    } else {
+                      _activeView = v;
+                      _notificationsOpen = false;
+                    }
+                  }),
+                  onLoadRecentChat: _loadRecentChat,
+                  user: _user,
+                  onLogOut: _handleLogOut,
+                  onNavigateSettings: _openSettingsTab,
+                  onOpenArchivedModal: () =>
+                      setState(() => _archivedModalOpen = true),
+                ),
 
               // Main Application Area
               Expanded(
@@ -574,9 +542,6 @@ class _AppShellState extends State<AppShell> {
               palette: palette,
               onClose: () => setState(() => _helpModalOpen = false),
             ),
-              ],
-            ),
-          ),
         ],
       ),
     );
